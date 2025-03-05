@@ -9,15 +9,20 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
-@NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "badges")
-public class Badges {
+@NoArgsConstructor
+public class UserBadge {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "badge_id")
-    private int badgeId;
-    @Column(name = "badge_name")
-    private String badgeName;
+    private int id;
+    @Column(name = "user_id")
+    private String userId;
+    @Column(name = "project_id")
+    private int projectId;
+
+    @ManyToOne
+    @JoinColumn(name = "badge_id")
+    private Badge badge;
+
 
 }

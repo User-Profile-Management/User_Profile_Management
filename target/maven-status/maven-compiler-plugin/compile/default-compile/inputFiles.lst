@@ -1,0 +1,13 @@
+/home/sreevidyavijayan/Desktop/User_Profile_Management/src/main/java/com/example/task/Controller/BadgeController.java
+/home/sreevidyavijayan/Desktop/User_Profile_Management/src/main/java/com/example/task/Controller/UserBadgeController.java
+/home/sreevidyavijayan/Desktop/User_Profile_Management/src/main/java/com/example/task/DTO/BadgeDTO.java
+/home/sreevidyavijayan/Desktop/User_Profile_Management/src/main/java/com/example/task/DTO/UserBadgeDTO.java
+/home/sreevidyavijayan/Desktop/User_Profile_Management/src/main/java/com/example/task/Entity/Badge.java
+/home/sreevidyavijayan/Desktop/User_Profile_Management/src/main/java/com/example/task/Entity/UserBadge.java
+/home/sreevidyavijayan/Desktop/User_Profile_Management/src/main/java/com/example/task/Mapper/BadgeMapper.java
+/home/sreevidyavijayan/Desktop/User_Profile_Management/src/main/java/com/example/task/Mapper/UserBadgeMapper.java
+/home/sreevidyavijayan/Desktop/User_Profile_Management/src/main/java/com/example/task/Repository/BadgeRepository.java
+/home/sreevidyavijayan/Desktop/User_Profile_Management/src/main/java/com/example/task/Repository/UserBadgeRepository.java
+/home/sreevidyavijayan/Desktop/User_Profile_Management/src/main/java/com/example/task/Service/BadgeService.java
+/home/sreevidyavijayan/Desktop/User_Profile_Management/src/main/java/com/example/task/Service/UserBadgeService.java
+/home/sreevidyavijayan/Desktop/User_Profile_Management/src/main/java/com/example/task/TaskApplication.java
