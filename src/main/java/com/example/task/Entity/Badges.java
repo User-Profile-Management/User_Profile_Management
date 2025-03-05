@@ -17,6 +17,7 @@ public class Badges {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "badge_id")
     private int badgeId;
+
     @Column(name = "badge_name")
     private String badgeName;
 
