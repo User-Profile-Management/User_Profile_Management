@@ -5,14 +5,13 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.annotation.processing.Generated;
-
 @Getter
 @Setter
-@NoArgsConstructor
 @AllArgsConstructor
-public class BadgesDTO {
-
+@NoArgsConstructor
+public class UserBadgeDTO {
+    private int userBadgeId;
+    private String userId;
+    private int projectId;
     private int badgeId;
-    private String badgeName;
 }
