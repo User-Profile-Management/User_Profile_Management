@@ -2,6 +2,7 @@ package com.example.task.Service;
 
 import com.example.task.Entity.Role;
 import com.example.task.Entity.User;
+import com.example.task.Repository.RoleRepository;
 import com.example.task.Repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,14 +25,16 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    // Register User
     @Transactional
     public User registerUser(User user, String roleName) {
         Role role = roleService.assignRole(roleName);
         user.setRole(role);
-        user.setPassword(passwordEncoder.encode(user.getPassword())); // Encode password
+        user.setStatus(User.Status.INACTIVE);
+        user.setUserId(generateUserId(role));
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         return userRepository.save(user);
     }
+
 
     //Generate UserID
     public String generateUserId(Role role) {
@@ -59,11 +62,15 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    // User Login
     public Optional<User> loginUser(String email, String rawPassword) {
         Optional<User> user = userRepository.findByEmail(email);
-        return user.filter(u -> passwordEncoder.matches(rawPassword, u.getPassword()));
+
+        return user.filter(u ->
+                passwordEncoder.matches(rawPassword, u.getPassword()) &&
+                        u.getStatus() == User.Status.ACTIVE // Check if user is approved
+        );
     }
+
 
     // Get Pending Approval Users
     public List<User> getPendingApprovalUsers() {

@@ -23,23 +23,23 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable()) // Disable CSRF for APIs
                 .authorizeHttpRequests(auth -> auth
-
-
-                        .requestMatchers( "/register","/login", "/oauth2/**").permitAll() // Public endpoints
-                        .requestMatchers("/api/**").authenticated() // Secure API endpoints
-                        .requestMatchers("/users/**").authenticated() // Secure user management endpoints
+                        .requestMatchers("/api/users/register").permitAll()
+                        .requestMatchers("/api/roles/**").permitAll()
+                        .requestMatchers("/api/users/login").permitAll()
+                        .requestMatchers("/api/**").authenticated() // Other APIs require authentication
                         .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth2 -> oauth2
-                        .loginPage("/login") // Custom login page (optional)
+                        .defaultSuccessUrl("/api/users/home", true) // Redirect after successful login
                         .userInfoEndpoint(userInfo -> userInfo
                                 .oidcUserService(new OidcUserService()) // Handles OAuth2 user details
                         )
                 )
-                .sessionManagement(session -> session.sessionCreationPolicy(STATELESS)); // Stateless sessions for API security
+                .sessionManagement(session -> session.sessionCreationPolicy(STATELESS)); // Stateless sessions for APIs
 
         return http.build();
     }
+
 
     @Bean
     public PasswordEncoder passwordEncoder() {

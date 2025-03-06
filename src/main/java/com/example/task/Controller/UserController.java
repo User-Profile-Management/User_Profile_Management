@@ -22,10 +22,18 @@ public class UserController {
 
 
     @PostMapping("/register")
-    public ResponseEntity<User> registerUser(@RequestBody User user, @RequestParam String roleName) {
-        User registeredUser = userService.registerUser(user, roleName);
-        return ResponseEntity.ok(registeredUser);
+    public ResponseEntity<?> registerUser(@RequestBody User user, @RequestParam String roleName) {
+        try {
+            // Ensure user is saved to database first
+            User registeredUser = userService.registerUser(user, roleName);
+
+            // Response message before login
+            return ResponseEntity.ok("User registered successfully. Awaiting admin approval.");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error registering user: " + e.getMessage());
+        }
     }
+
 
     @PostMapping("/login")
     public ResponseEntity<?> loginUser(@RequestParam String email, @RequestParam String password) {
