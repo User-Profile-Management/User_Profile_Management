@@ -6,14 +6,15 @@ import com.example.task.Entity.Badge;
 import java.util.Base64;
 
 public class BadgeMapper {
-    public static BadgeDTO maptoBadgesDTO(Badge badge) { //mapping jpa to dto
+    public static BadgeDTO mapToBadgeDTO(Badge badge) {
         return new BadgeDTO(
                 badge.getId(),
                 badge.getName(),
                 (badge.getImage() != null) ? Base64.getEncoder().encodeToString(badge.getImage()) : null
         );
     }
-    public static Badge maptoBadges(BadgeDTO badgeDTO){ //mapping dto to jpa
+
+    public static Badge mapToBadge(BadgeDTO badgeDTO) {
         return new Badge(
                 badgeDTO.getId(),
                 badgeDTO.getName(),
@@ -21,4 +22,3 @@ public class BadgeMapper {
         );
     }
 }
-

@@ -1,5 +1,15 @@
 package com.example.task.Mapper;
 
-public class UserBadgeMapper {
+import com.example.task.DTO.UserBadgeDTO;
+import com.example.task.Entity.UserBadge;
 
+public class UserBadgeMapper {
+    public static UserBadgeDTO mapToUserBadgeDTO(UserBadge userBadge) {
+        return new UserBadgeDTO(
+                userBadge.getId(),
+                userBadge.getUserId(),
+                userBadge.getProjectId(),
+                userBadge.getBadge().getId()
+        );
+    }
 }

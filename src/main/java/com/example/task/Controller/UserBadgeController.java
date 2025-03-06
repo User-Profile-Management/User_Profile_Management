@@ -1,14 +1,14 @@
 package com.example.task.Controller;
 
-import com.example.task.Entity.UserBadge;
+import com.example.task.DTO.UserBadgeDTO;
 import com.example.task.Service.UserBadgeService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@RestController
+@RequestMapping("/api/badges")
 public class UserBadgeController {
     private final UserBadgeService userBadgeService;
 
@@ -16,13 +16,13 @@ public class UserBadgeController {
         this.userBadgeService = userBadgeService;
     }
 
-    @PostMapping("/badges") //change the api according to documentation
-    public String assignBadge(@RequestParam String userId, @RequestParam int projectId) {
-        return userBadgeService.assignBadgeOnProjectCompletion(userId, projectId);
+    @PostMapping("/userbadges")
+    public ResponseEntity<String> assignBadge(@RequestBody UserBadgeDTO userBadgeDTO) {
+        return ResponseEntity.ok(userBadgeService.assignBadgeOnProjectCompletion(userBadgeDTO.getUserId(), userBadgeDTO.getProjectId()));
     }
 
-    @GetMapping("/{userId}")
-    public List<UserBadge> getUserBadges(@PathVariable String userId) {
-        return userBadgeService.getUserBadge(userId);
+    @GetMapping("/{userId}/badges")
+    public ResponseEntity<List<UserBadgeDTO>> getUserBadges(@PathVariable String userId) {
+        return ResponseEntity.ok(userBadgeService.getUserBadge(userId));
     }
 }

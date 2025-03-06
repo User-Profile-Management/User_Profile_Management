@@ -1,79 +1,59 @@
 package com.example.task.Service;
 
+import com.example.task.DTO.UserBadgeDTO;
 import com.example.task.Entity.Badge;
 import com.example.task.Entity.UserBadge;
+import com.example.task.Mapper.UserBadgeMapper;
 import com.example.task.Repository.BadgeRepository;
 import com.example.task.Repository.UserBadgeRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class UserBadgeService {
     private final UserBadgeRepository userBadgeRepository;
     private final BadgeRepository badgeRepository;
-    //change this according to the project code
-//    private final ProjectRepository projectRepository;
 
     public UserBadgeService(UserBadgeRepository userBadgeRepository, BadgeRepository badgeRepository) {
         this.userBadgeRepository = userBadgeRepository;
         this.badgeRepository = badgeRepository;
-//        this.projectRepository = projectRepository;
     }
 
     public String assignBadgeOnProjectCompletion(String userId, int projectId) {
-
-
-        // change according to the project codes
-//        Project project = projectRepository.findById(projectId)
-//                .orElseThrow(() -> new RuntimeException("Project not found: " + projectId));
-//
-//        if (!"Completed".equalsIgnoreCase(project.getStatus())) {
-//            return "Project is not completed. No badge assigned.";
-//        }
-
-        //FOR TESTING
         boolean isCompleted = (projectId % 2 == 0);
-
         if (!isCompleted) {
             return "Project is not completed. No badge assigned.";
         }
 
-        // Count completed projects for the user
         List<UserBadge> completedProjects = userBadgeRepository.findByUserId(userId);
-        int completedCount = completedProjects.size() + 1; // Including this project
+        int completedCount = completedProjects.size() + 1;
 
-
-        String name = null;
+        final String badgeName;
         if (completedCount == 1) {
-            name = "Bronze";
+            badgeName = "Bronze";
         } else if (completedCount == 2) {
-            name = "Silver";
+            badgeName = "Silver";
         } else if (completedCount == 3) {
-           name = "Gold";
+            badgeName = "Gold";
+        } else {
+            return "No badge assigned.";
         }
 
-        if (name != null) {
-            final String badgeName = name;
-            Badge badge = badgeRepository.findByName(badgeName)
-                    .orElseThrow(() -> new RuntimeException("Badge not found:"+ badgeName));
+        Badge badge = badgeRepository.findByName(badgeName)
+                .orElseThrow(() -> new RuntimeException("Badge not found: " + badgeName));
 
-            System.out.println(" Fetching badge: " + badge.getId() + " - " + badge.getName());
-            System.out.println(" Assigning badge to User: " + userId + ", Project: " + projectId);
+        UserBadge userBadge = new UserBadge(0, userId, projectId, badge);
+        userBadgeRepository.save(userBadge);
 
-
-            // Assign badge to user
-            UserBadge userBadge = new UserBadge(0, userId, projectId, badge);
-            userBadgeRepository.save(userBadge);
-
-            return "Assigned " + name + " badge to user " + userId;
-        }
-
-        return "No badge assigned.";
+        return "Assigned " + badgeName + " badge to user " + userId;
     }
 
-    public List<UserBadge> getUserBadge(String userId) {
-        return userBadgeRepository.findByUserId(userId);
+    public List<UserBadgeDTO> getUserBadge(String userId) {
+        return userBadgeRepository.findByUserId(userId)
+                .stream()
+                .map(UserBadgeMapper::mapToUserBadgeDTO)
+                .collect(Collectors.toList());
     }
 }

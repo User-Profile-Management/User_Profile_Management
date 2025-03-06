@@ -9,8 +9,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/api/badges")
 public class BadgeController {
     private final BadgeService badgeService;
 
@@ -18,19 +19,22 @@ public class BadgeController {
         this.badgeService = badgeService;
     }
 
-    // Get all badges
+    @PostMapping
+    public ResponseEntity<String> addBadge(@RequestBody Badge badge) {
+        badgeService.saveBadge(badge);
+        return ResponseEntity.ok("Badge added successfully!");
+    }
+
     @GetMapping
     public List<Badge> getAllBadges() {
         return badgeService.getAllBadges();
     }
 
-    // Get a badge by ID(change )
     @GetMapping("/{name}")
-    public Badge getBadgeByName(@PathVariable String name) {
-        return badgeService.getBadgeByName(name);
+    public ResponseEntity<Badge> getBadgeByName(@PathVariable String name) {
+        return ResponseEntity.ok(badgeService.getBadgeByName(name));
     }
 
-    // Upload an image to a badge(chang PK to id)
     @PostMapping(value = "/{name}/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<String> uploadBadgeImage(@PathVariable String name, @RequestParam MultipartFile file) {
         try {

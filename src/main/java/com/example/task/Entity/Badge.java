@@ -1,10 +1,7 @@
 package com.example.task.Entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Entity
 @Getter
@@ -15,12 +12,13 @@ import lombok.Setter;
 public class Badge {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "badge_id")
+
     private int id;
-    @Column(name = "badge_name")
+
+    @Column(unique = true, nullable = false)
     private String name;
 
     @Lob
-    private byte[] image;
 
+    private byte[] image;
 }
