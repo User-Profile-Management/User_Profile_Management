@@ -20,7 +20,7 @@ public class ProjectController {
     // Get count of completed projects for a user
     @GetMapping("/user/{userId}/projects/completed_count")
     public ResponseEntity<Integer> getCompletedProjectCount(@PathVariable Integer userId) {
-        return ResponseEntity.ok(projectService.getCompletedProjectCount(userId));
+        return ResponseEntity.ok(projectService.getCompletedProjectCount(String.valueOf(userId)));
     }
 
     // Edit project
@@ -47,7 +47,7 @@ public class ProjectController {
     // Get all projects for a user
     @GetMapping("/user/{userId}/projects")
     public ResponseEntity<List<ProjectDTO>> getUserProjects(@PathVariable Integer userId) {
-        return ResponseEntity.ok(projectService.getUserProjects(userId));
+        return ResponseEntity.ok(projectService.getUserProjects(String.valueOf(userId)));
     }
 
     // Add a project for a user
@@ -55,7 +55,7 @@ public class ProjectController {
     public ResponseEntity<ProjectDTO> addUserProject(
             @PathVariable Integer userId,
             @RequestBody ProjectDTO projectDTO) {
-        return ResponseEntity.ok(projectService.addUserProject(userId, projectDTO));
+        return ResponseEntity.ok(projectService.addUserProject(String.valueOf(userId), projectDTO));
     }
 
     // Update project status for a user
@@ -64,7 +64,7 @@ public class ProjectController {
             @PathVariable Integer userId,
             @PathVariable Integer projectId,
             @RequestBody ProjectDTO projectDTO) {
-        return ResponseEntity.ok(projectService.updateUserProjectStatus(userId, projectId, projectDTO));
+        return ResponseEntity.ok(projectService.updateUserProjectStatus(String.valueOf(userId), projectId, projectDTO));
     }
 
     // Delete a project assigned to a user
@@ -72,7 +72,7 @@ public class ProjectController {
     public ResponseEntity<String> deleteUserProject(
             @PathVariable Integer userId,
             @PathVariable Integer projectId) {
-        projectService.deleteUserProject(userId, projectId);
+        projectService.deleteUserProject(String.valueOf(userId), projectId);
         return ResponseEntity.ok("Project deleted successfully for user.");
     }
 

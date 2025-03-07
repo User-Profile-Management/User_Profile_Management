@@ -3,7 +3,7 @@ package com.example.task.Service;
 
 
 import com.example.task.DTO.CertificateDTO;
-import com.example.task.Entity.Certificates;
+import com.example.task.Entity.Certificate;
 import com.example.task.Mapper.CertificateMapper;
 import com.example.task.Repository.CertificateRepository;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +28,7 @@ public class CertificateServiceImpl implements CertificateService {
 
     @Override
     public CertificateDTO getCertificateById(int certificateId) {
-        Certificates certificate = certificateRepository.findById(certificateId)
+        Certificate certificate = certificateRepository.findById(certificateId)
                 .orElseThrow(() -> new RuntimeException("Certificate not found"));
         return CertificateMapper.toDTO(certificate);
     }
@@ -36,12 +36,12 @@ public class CertificateServiceImpl implements CertificateService {
     @Override
     public CertificateDTO uploadCertificate(String name, String issuedBy, MultipartFile file) {
         try {
-            Certificates certificate = new Certificates();
+            Certificate certificate = new Certificate();
             certificate.setCertificateName(name);
             certificate.setIssuedBy(issuedBy);
             certificate.setCertificateDocument(file.getBytes());
 
-            Certificates savedCertificate = certificateRepository.save(certificate);
+            Certificate savedCertificate = certificateRepository.save(certificate);
             return CertificateMapper.toDTO(savedCertificate);
 
         } catch (IOException e) {
@@ -51,7 +51,7 @@ public class CertificateServiceImpl implements CertificateService {
 
     @Override
     public byte[] getCertificateFile(int certificateId) {
-        Certificates certificate = certificateRepository.findById(certificateId)
+        Certificate certificate = certificateRepository.findById(certificateId)
                 .orElseThrow(() -> new RuntimeException("Certificate not found"));
         return certificate.getCertificateDocument();
     }

@@ -2,11 +2,11 @@ package com.example.task.Mapper;
 
 
 import com.example.task.DTO.CertificateDTO;
-import com.example.task.Entity.Certificates;
+import com.example.task.Entity.Certificate;
 
 public class CertificateMapper {
 
-    public static CertificateDTO toDTO(Certificates certificate) {
+    public static CertificateDTO toDTO(Certificate certificate) {
         return new CertificateDTO(
                 certificate.getCertificateId(),
                 certificate.getCertificateName(),

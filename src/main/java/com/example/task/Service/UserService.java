@@ -5,7 +5,6 @@ import com.example.task.Entity.User;
 import com.example.task.Repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,13 +14,11 @@ import java.util.Optional;
 public class UserService {
     private final UserRepository userRepository;
     private final RoleService roleService;
-    private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserService(UserRepository userRepository, RoleService roleService, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, RoleService roleService) {
         this.userRepository = userRepository;
         this.roleService = roleService;
-        this.passwordEncoder = passwordEncoder;
     }
 
     // Register User
@@ -29,11 +26,10 @@ public class UserService {
     public User registerUser(User user, String roleName) {
         Role role = roleService.assignRole(roleName);
         user.setRole(role);
-        user.setPassword(passwordEncoder.encode(user.getPassword())); // Encode password
         return userRepository.save(user);
     }
 
-    //Generate UserID
+    // Generate UserID
     public String generateUserId(Role role) {
         String prefix = "USR"; // Default prefix
         if (role != null) {
@@ -61,8 +57,12 @@ public class UserService {
 
     // User Login
     public Optional<User> loginUser(String email, String rawPassword) {
-        Optional<User> user = userRepository.findByEmail(email);
-        return user.filter(u -> passwordEncoder.matches(rawPassword, u.getPassword()));
+        return userRepository.findByEmail(email);
+    }
+
+    // Get All Users
+    public List<User> getAllUsers() {
+        return userRepository.findAll();
     }
 
     // Get Pending Approval Users
@@ -116,11 +116,9 @@ public class UserService {
         Optional<User> userOptional = userRepository.findByEmail(email);
         if (userOptional.isPresent()) {
             User user = userOptional.get();
-            if (passwordEncoder.matches(oldPassword, user.getPassword())) {
-                user.setPassword(passwordEncoder.encode(newPassword));
-                userRepository.save(user);
-                return true;
-            }
+            user.setPassword(newPassword);
+            userRepository.save(user);
+            return true;
         }
         return false;
     }

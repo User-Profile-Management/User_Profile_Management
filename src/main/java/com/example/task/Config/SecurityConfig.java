@@ -6,6 +6,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 //import org.springframework.security.authentication.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
@@ -23,20 +24,21 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable()) // Disable CSRF for APIs
                 .authorizeHttpRequests(auth -> auth
-
-
-                        .requestMatchers( "/register","/login", "/oauth2/**").permitAll() // Public endpoints
-                        .requestMatchers("/api/**").authenticated() // Secure API endpoints
-                        .requestMatchers("/users/**").authenticated() // Secure user management endpoints
+                        .requestMatchers("/api/users/register").permitAll()
+                        .requestMatchers("/api/roles/**").permitAll()
+                        .requestMatchers("/api/users/login").permitAll()
+                        .requestMatchers("/api/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth2 -> oauth2
-                        .loginPage("/login") // Custom login page (optional)
+                        .defaultSuccessUrl("/api/users/home", false) // Redirect to home only when necessary
                         .userInfoEndpoint(userInfo -> userInfo
                                 .oidcUserService(new OidcUserService()) // Handles OAuth2 user details
                         )
                 )
-                .sessionManagement(session -> session.sessionCreationPolicy(STATELESS)); // Stateless sessions for API security
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED) // Allow session for OAuth2
+                );
 
         return http.build();
     }

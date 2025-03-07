@@ -15,4 +15,6 @@ public interface UserRepository extends JpaRepository<User, String> {
     Optional<User> findByGoogleId(String googleId);
 
     List<User> findByStatus(User.Status status);
+
+    Optional<User> findById(String userId);
 }

@@ -1,7 +1,5 @@
 package com.example.task.Controller;
 
-
-
 import com.example.task.Entity.Role;
 import com.example.task.Service.RoleService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,4 +40,3 @@ public class RoleController {
     }
 
 }
-

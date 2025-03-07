@@ -2,26 +2,26 @@ package com.example.task.Mapper;
 
 
 import com.example.task.DTO.ProjectDTO;
-import com.example.task.Entity.Projects;
+import com.example.task.Entity.Project;
 import org.springframework.stereotype.Component;
 
 @Component
 public class ProjectMapper {
 
-    public ProjectDTO toDTO(Projects project) {
+    public ProjectDTO toDTO(Project project) {
         ProjectDTO dto = new ProjectDTO();
         dto.setId(project.getId());
-        dto.setName(project.getName());
+        dto.setProjectName(project.getProjectName());
         dto.setDescription(project.getDescription());
         dto.setStatus(project.getStatus());
-        dto.setUserId(project.getUser().getId());
+        dto.setId(Integer.parseInt(project.getUserId()));
         return dto;
     }
 
-    public Projects toEntity(ProjectDTO dto) {
-        Projects project = new Project();
+    public Project toEntity(ProjectDTO dto) {
+        Project project = new Project();
         project.setId(dto.getId());
-        project.setName(dto.getName());
+        project.setProjectName(dto.getProjectName()); // Fix here
         project.setDescription(dto.getDescription());
         project.setStatus(dto.getStatus());
         return project;

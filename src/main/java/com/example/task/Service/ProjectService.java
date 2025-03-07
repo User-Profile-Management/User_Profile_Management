@@ -1,12 +1,15 @@
 package com.example.task.Service;
 
 import com.example.task.DTO.ProjectDTO;
-import com.example.task.Entity.Projects;
+import com.example.task.Entity.Project;
+import com.example.task.Entity.User;
 import com.example.task.Mapper.ProjectMapper;
 import com.example.task.Repository.ProjectRepository;
+import com.example.task.Repository.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -23,16 +26,26 @@ public class ProjectService {
     }
 
     // Get count of completed projects for a user
-    public Integer getCompletedProjectCount(Integer userId) {
-        return projectRepository.countByUserIdAndStatus(userId, "COMPLETED");
+    public Integer getCompletedProjectCount(String userId) {
+        Optional<User> userOptional = userRepository.findById(userId);
+
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+            return projectRepository.countByMentorAndStatus(user, "COMPLETED");
+        } else {
+            throw new RuntimeException("User not found with userId: " + userId);
+        }
     }
 
     // Edit a project
     public ProjectDTO updateProject(Integer projectId, ProjectDTO projectDTO) {
-        Projects project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new RuntimeException("Project not found"));
+        Optional<Project> projectOptional = projectRepository.findById(projectId);
+        if (!projectOptional.isPresent()) {
+            throw new RuntimeException("Project not found with ID: " + projectId);
+        }
 
-        project.setName(projectDTO.getName());
+        Project project = projectOptional.get();
+        project.setProjectName(projectDTO.getProjectName());
         project.setDescription(projectDTO.getDescription());
         project.setStatus(projectDTO.getStatus());
 
@@ -42,6 +55,9 @@ public class ProjectService {
 
     // Delete a project
     public void deleteProject(Integer projectId) {
+        if (!projectRepository.existsById(projectId)) {
+            throw new RuntimeException("Project not found with ID: " + projectId);
+        }
         projectRepository.deleteById(projectId);
     }
 
@@ -51,52 +67,82 @@ public class ProjectService {
     }
 
     // Get all projects for a user
-    public List<ProjectDTO> getUserProjects(Integer userId) {
-        List<Projects> projects = projectRepository.findByUserId(userId);
-        return projects.stream().map(projectMapper::toDTO).collect(Collectors.toList());
+    public List<ProjectDTO> getUserProjects(String userId) {
+        Optional<User> userOptional = userRepository.findById(userId);
+
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+            return projectRepository.findByMentor(user).stream()
+                    .map(p -> new ProjectDTO(p.getId(), p.getProjectName(), p.getStatus(), p.getDescription()))
+                    .collect(Collectors.toList());
+        } else {
+            throw new RuntimeException("User not found with userId: " + userId);
+        }
     }
 
     // Add a project for a user
-    public ProjectDTO addUserProject(Integer userId, ProjectDTO projectDTO) {
-        Projects project = projectMapper.toEntity(projectDTO);
-        project.setUser(userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found")));
+    public ProjectDTO addUserProject(String userId, ProjectDTO projectDTO) {
+        Optional<User> userOptional = userRepository.findById(userId);
+        if (!userOptional.isPresent()) {
+            throw new RuntimeException("User not found with ID: " + userId);
+        }
+
+        Project project = projectMapper.toEntity(projectDTO);
+        project.setMentor(userOptional.get()); // Assign mentor
         project = projectRepository.save(project);
         return projectMapper.toDTO(project);
     }
 
     // Update project status for a user
-    public ProjectDTO updateUserProjectStatus(Integer userId, Integer projectId, ProjectDTO projectDTO) {
-        Projects project = projectRepository.findByIdAndUserId(projectId, userId)
-                .orElseThrow(() -> new RuntimeException("Project not found for user"));
+    public ProjectDTO updateUserProjectStatus(String userId, Integer projectId, ProjectDTO projectDTO) {
+        Optional<User> userOptional = userRepository.findById(userId);
+        if (!userOptional.isPresent()) {
+            throw new RuntimeException("User not found with ID: " + userId);
+        }
 
+        Optional<Project> projectOptional = projectRepository.findByIdAndMentor(projectId, userOptional.get());
+        if (!projectOptional.isPresent()) {
+            throw new RuntimeException("Project not found for user ID: " + userId);
+        }
+
+        Project project = projectOptional.get();
         project.setStatus(projectDTO.getStatus());
         projectRepository.save(project);
         return projectMapper.toDTO(project);
     }
 
     // Delete a project assigned to a user
-    public void deleteUserProject(Integer userId, Integer projectId) {
-        Projects project = projectRepository.findByIdAndUserId(projectId, userId)
-                .orElseThrow(() -> new RuntimeException("Project not found for user"));
-        projectRepository.delete(project);
+    public void deleteUserProject(String userId, Integer projectId) {
+        Optional<User> userOptional = userRepository.findById(userId);
+        if (!userOptional.isPresent()) {
+            throw new RuntimeException("User not found with ID: " + userId);
+        }
+
+        Optional<Project> projectOptional = projectRepository.findByIdAndMentor(projectId, userOptional.get());
+        if (!projectOptional.isPresent()) {
+            throw new RuntimeException("Project not found for user ID: " + userId);
+        }
+
+        projectRepository.delete(projectOptional.get());
     }
+
 
     // Get all projects
     public List<ProjectDTO> getAllProjects() {
-        List<Projects> projects = projectRepository.findAll();
+        List<Project> projects = projectRepository.findAll();
         return projects.stream().map(projectMapper::toDTO).collect(Collectors.toList());
     }
 
     // Add a new project
     public ProjectDTO createProject(ProjectDTO projectDTO) {
-        Projects project = projectMapper.toEntity(projectDTO);
+        Project project = projectMapper.toEntity(projectDTO);
         project = projectRepository.save(project);
         return projectMapper.toDTO(project);
     }
 
-    // Get projects based on user role (for now, returns all projects)
+    // Get projects based on user role (returns all projects for now)
     public List<ProjectDTO> getProjectsByUserRole() {
-        List<Projects> projects = projectRepository.findAll();
+        List<Project> projects = projectRepository.findAll();
         return projects.stream().map(projectMapper::toDTO).collect(Collectors.toList());
     }
 

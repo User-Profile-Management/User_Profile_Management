@@ -2,16 +2,15 @@ package com.example.task.Entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.annotation.Id;
 
 @Entity
 @Table(name = "projects")
 @Getter
 @Setter
-@NoArgsConstructor  // Generates a no-args constructor
+@NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Projects {
+public class Project {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,9 +24,13 @@ public class Projects {
     private String description;
 
     @ManyToOne
-    @JoinColumn(name = "mentor_id", referencedColumnName = "user_id")
-    private User mentor;  // Assuming 'User' entity exists
+    @JoinColumn(name = "mentor_id", nullable = false)
+    private User mentor;
 
     @Column(name = "status")
     private String status;
+
+    public String getUserId() {
+        return mentor != null ? mentor.getUserId() : null;
+    }
 }
