@@ -27,21 +27,34 @@ public class SecurityConfig {
                         .requestMatchers("/api/users/register").permitAll()
                         .requestMatchers("/api/roles/**").permitAll()
                         .requestMatchers("/api/users/login").permitAll()
+<<<<<<< HEAD
                         .requestMatchers("/api/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth2 -> oauth2
                         .defaultSuccessUrl("/api/users/home", false) // Redirect to home only when necessary
+=======
+                        .requestMatchers("/api/**").authenticated() // Other APIs require authentication
+                        .anyRequest().authenticated()
+                )
+                .oauth2Login(oauth2 -> oauth2
+                        .defaultSuccessUrl("/api/users/home", true) // Redirect after successful login
+>>>>>>> 3a184786dd3f0b4132fd4967c5e52ff40c099b75
                         .userInfoEndpoint(userInfo -> userInfo
                                 .oidcUserService(new OidcUserService()) // Handles OAuth2 user details
                         )
                 )
+<<<<<<< HEAD
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED) // Allow session for OAuth2
                 );
+=======
+                .sessionManagement(session -> session.sessionCreationPolicy(STATELESS)); // Stateless sessions for APIs
+>>>>>>> 3a184786dd3f0b4132fd4967c5e52ff40c099b75
 
         return http.build();
     }
+
 
     @Bean
     public PasswordEncoder passwordEncoder() {
