@@ -25,6 +25,5 @@ public class UserBadge {
 
     @ManyToOne
     @JoinColumn(name = "badge_id", referencedColumnName = "id")
-    @PrimaryKeyJoinColumn
     private Badge badge;
 }
