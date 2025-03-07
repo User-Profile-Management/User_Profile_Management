@@ -1,5 +1,6 @@
 package com.example.task.Controller;
 
+import com.example.task.DTO.RegisterUserDTO;
 import com.example.task.Entity.User;
 import com.example.task.Service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,17 +23,35 @@ public class UserController {
 
 
     @PostMapping("/register")
-    public ResponseEntity<?> registerUser(@RequestBody User user, @RequestParam String roleName) {
+    public ResponseEntity<?> registerUser(@RequestBody RegisterUserDTO userDTO) {
         try {
-            // Ensure user is saved to database first
-            User registeredUser = userService.registerUser(user, roleName);
+            // Ensure roleName is provided
+            if (userDTO.getRoleName() == null || userDTO.getRoleName().trim().isEmpty()) {
+                return ResponseEntity.badRequest().body("Role is required in the request body");
+            }
 
-            // Response message before login
+            // Convert DTO to User entity
+            User user = new User();
+            user.setGoogleId(userDTO.getGoogleId());
+            user.setFullName(userDTO.getFullName());
+            user.setEmergencyContact(userDTO.getEmergencyContact());
+            user.setDateOfBirth(userDTO.getDateOfBirth());
+            user.setPassword(userDTO.getPassword());
+            user.setContactNo(userDTO.getContactNo());
+            user.setAddress(userDTO.getAddress());
+            user.setStatus(User.Status.INACTIVE); // Default status
+            user.setProfilePicture(userDTO.getProfilePicture());
+            user.setEmail(userDTO.getEmail());
+
+            // Register the user with the role
+            User registeredUser = userService.registerUser(user, userDTO.getRoleName());
+
             return ResponseEntity.ok("User registered successfully. Awaiting admin approval.");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error registering user: " + e.getMessage());
         }
     }
+
 
 
     @PostMapping("/login")
