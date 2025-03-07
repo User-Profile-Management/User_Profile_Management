@@ -27,14 +27,6 @@ public class UserController {
     };
 
     @PostMapping("/register")
-<<<<<<< HEAD
-    public ResponseEntity<?> registerUser(@RequestBody User user, @RequestParam String roleName) {
-        try {
-            // Ensure user is saved to database first
-            User registeredUser = userService.registerUser(user, roleName);
-
-            // Response message before login
-=======
     public ResponseEntity<?> registerUser(@RequestBody RegisterUserDTO userDTO) {
         try {
             // Ensure roleName is provided
@@ -57,8 +49,6 @@ public class UserController {
 
             // Register the user with the role
             User registeredUser = userService.registerUser(user, userDTO.getRoleName());
-
->>>>>>> 3a184786dd3f0b4132fd4967c5e52ff40c099b75
             return ResponseEntity.ok("User registered successfully. Awaiting admin approval.");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error registering user: " + e.getMessage());
@@ -66,10 +56,6 @@ public class UserController {
     }
 
 
-<<<<<<< HEAD
-=======
-
->>>>>>> 3a184786dd3f0b4132fd4967c5e52ff40c099b75
     @PostMapping("/login")
     public ResponseEntity<?> loginUser(@RequestParam String email, @RequestParam String password) {
         Optional<User> user = userService.loginUser(email, password);
@@ -80,6 +66,14 @@ public class UserController {
         }
     }
 
+    @GetMapping
+    public ResponseEntity<List<User>> getAllUsers() {
+        List<User> users = userService.getAllUsers();
+        if (users.isEmpty()) {
+            return ResponseEntity.noContent().build(); // Return 204 if no users found
+        }
+        return ResponseEntity.ok(users);
+    }
 
 
     @GetMapping("/{id}")

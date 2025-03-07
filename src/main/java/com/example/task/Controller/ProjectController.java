@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v2/projects")
+@RequestMapping("/api/projects")
 public class ProjectController {
 
     private final ProjectService projectService;
@@ -19,8 +19,8 @@ public class ProjectController {
 
     // Get count of completed projects for a user
     @GetMapping("/user/{userId}/projects/completed_count")
-    public ResponseEntity<Integer> getCompletedProjectCount(@PathVariable Integer userId) {
-        return ResponseEntity.ok(projectService.getCompletedProjectCount(String.valueOf(userId)));
+    public ResponseEntity<Integer> getCompletedProjectCount(@PathVariable String userId) {
+        return ResponseEntity.ok(projectService.getCompletedProjectCount(userId));
     }
 
     // Edit project

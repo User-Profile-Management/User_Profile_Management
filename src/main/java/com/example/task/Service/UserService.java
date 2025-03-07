@@ -2,10 +2,10 @@ package com.example.task.Service;
 
 import com.example.task.Entity.Role;
 import com.example.task.Entity.User;
-import com.example.task.Repository.RoleRepository;
 import com.example.task.Repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,23 +15,19 @@ import java.util.Optional;
 public class UserService {
     private final UserRepository userRepository;
     private final RoleService roleService;
+    private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserService(UserRepository userRepository, RoleService roleService) {
+    public UserService(UserRepository userRepository, RoleService roleService, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.roleService = roleService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Transactional
     public User registerUser(User user, String roleName) {
         Role role = roleService.assignRole(roleName);
         user.setRole(role);
-<<<<<<< HEAD
-        return userRepository.save(user);
-    }
-
-    // Generate UserID
-=======
         user.setStatus(User.Status.INACTIVE);
         user.setUserId(generateUserId(role));
         user.setPassword(passwordEncoder.encode(user.getPassword()));
@@ -40,7 +36,6 @@ public class UserService {
 
 
     //Generate UserID
->>>>>>> 3a184786dd3f0b4132fd4967c5e52ff40c099b75
     public String generateUserId(Role role) {
         String prefix = "USR"; // Default prefix
         if (role != null) {
@@ -67,21 +62,13 @@ public class UserService {
     }
 
     public Optional<User> loginUser(String email, String rawPassword) {
-<<<<<<< HEAD
-        return userRepository.findByEmail(email);
-    }
-
-    // Get All Users
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
-=======
         Optional<User> user = userRepository.findByEmail(email);
 
         return user.filter(u ->
                 passwordEncoder.matches(rawPassword, u.getPassword()) &&
                         u.getStatus() == User.Status.ACTIVE // Check if user is approved
         );
->>>>>>> 3a184786dd3f0b4132fd4967c5e52ff40c099b75
+
     }
 
 
@@ -93,6 +80,10 @@ public class UserService {
     // Get User by Email
     public Optional<User> getUserByEmail(String email) {
         return userRepository.findByEmail(email);
+    }
+
+    public List<User> getAllUsers() {
+        return userRepository.findAll();
     }
 
     // Get User by ID
