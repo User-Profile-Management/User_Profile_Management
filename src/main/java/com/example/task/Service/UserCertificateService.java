@@ -20,7 +20,6 @@ public class UserCertificateService {
         this.certificateRepository = certificateRepository;
     }
 
-
     public List<UserCertificate> getAllUserCertificates() {
         return userCertificateRepository.findAll();
     }
@@ -33,7 +32,7 @@ public class UserCertificateService {
 
     public UserCertificate addUserCertificate(String userId, int certificateId) {
         Certificate certificate = certificateRepository.findById(certificateId)
-                .orElseThrow(() -> new RuntimeException("Certificate not found"));  // 🔄 Fetch Certificate entity
+                .orElseThrow(() -> new RuntimeException("Certificate not found"));
 
         UserCertificate userCertificate = new UserCertificate();
         userCertificate.setUserId(userId);

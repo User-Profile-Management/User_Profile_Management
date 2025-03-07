@@ -25,9 +25,9 @@ public class UserCertificate {
     private int certificateId;
 
 
-//    @ManyToOne
-//    @JoinColumn(name = "certificate_id", referencedColumnName = "id")
-//    @PrimaryKeyJoinColumn
-//    private Certificate certificate;
+    @ManyToOne
+    @JoinColumn(name = "certificate_id", referencedColumnName = "id")
+    @PrimaryKeyJoinColumn
+    private Certificate certificate;
 }
 

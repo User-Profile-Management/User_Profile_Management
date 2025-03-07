@@ -23,10 +23,12 @@ public class UserCertificateController {
         return userCertificateService.getAllUserCertificates();
     }
 
+
     @GetMapping("/{userId}")
     public List<UserCertificate> getUserCertificatesByUserId(@PathVariable String userId) {
         return userCertificateService.getUserCertificatesByUserId(userId);
     }
+
 
     @PostMapping
     public UserCertificate addUserCertificate(

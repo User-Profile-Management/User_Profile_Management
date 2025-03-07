@@ -15,11 +15,12 @@ public class UserCertificateMapper {
     }
 
 
-    public static UserCertificate mapToUserCertificate(UserCertificateDTO userCertificateDTO) {
-        return new UserCertificate(
-                userCertificateDTO.getId(),
-                userCertificateDTO.getUserId(),
-                userCertificateDTO.getCertificateId()
+    public static UserCertificateDTO mapToUserCertificateDTO(UserCertificate userCertificate) {
+        return new UserCertificateDTO(
+                userCertificate.getId(),
+                userCertificate.getUserId(),
+                userCertificate.getCertificate().getId()  
         );
     }
+
 }
