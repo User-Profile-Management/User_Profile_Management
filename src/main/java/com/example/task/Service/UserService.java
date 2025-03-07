@@ -2,13 +2,12 @@ package com.example.task.Service;
 
 import com.example.task.Entity.Role;
 import com.example.task.Entity.User;
-import com.example.task.Repository.RoleRepository;
 import com.example.task.Repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -82,26 +81,31 @@ public class UserService {
         return userRepository.findByEmail(email);
     }
 
+    public List<User> getAllUsers() {
+        return userRepository.findAllByDeletedAtIsNull(); // Fetch only non-deleted users
+    }
+
     // Get User by ID
     public Optional<User> getUserById(String userId) {
-        return userRepository.findById(userId);
+        return userRepository.findByUserIdAndDeletedAtIsNull(userId);
     }
 
     // Update User Profile
     public User updateUserProfile(String userId, User updatedUser) {
-        return userRepository.findById(userId)
+        return userRepository.findByUserIdAndDeletedAtIsNull(userId)
                 .map(existingUser -> {
                     existingUser.setFullName(updatedUser.getFullName());
                     existingUser.setContactNo(updatedUser.getContactNo());
                     existingUser.setAddress(updatedUser.getAddress());
                     existingUser.setProfilePicture(updatedUser.getProfilePicture());
+                    existingUser.setUpdatedAt(LocalDateTime.now());
                     return userRepository.save(existingUser);
                 }).orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
     }
 
     // Update User by Admin
     public User updateUserByAdmin(String userId, User updatedUser) {
-        return userRepository.findById(userId)
+        return userRepository.findByUserIdAndDeletedAtIsNull(userId)
                 .map(existingUser -> {
                     existingUser.setFullName(updatedUser.getFullName());
                     existingUser.setContactNo(updatedUser.getContactNo());
@@ -109,14 +113,20 @@ public class UserService {
                     existingUser.setProfilePicture(updatedUser.getProfilePicture());
                     existingUser.setStatus(updatedUser.getStatus());
                     existingUser.setRole(updatedUser.getRole());
+                    existingUser.setUpdatedAt(LocalDateTime.now());
                     return userRepository.save(existingUser);
                 }).orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
     }
 
-    // Delete User
+    // Soft Delete User (Set deletedAt timestamp instead of deleting)
+    @Transactional
     public void deleteUser(String userId) {
-        userRepository.deleteById(userId);
+        userRepository.findById(userId).ifPresent(user -> {
+            user.setDeletedAt(LocalDateTime.now()); // Mark as deleted
+            userRepository.save(user); // Save changes
+        });
     }
+
 
     // Update Password
     public boolean updatePassword(String email, String oldPassword, String newPassword) {

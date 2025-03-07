@@ -2,6 +2,7 @@ package com.example.task.Config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 //import org.springframework.security.authentication.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -25,16 +26,18 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/users/register").permitAll()
                         .requestMatchers("/api/roles/**").permitAll()
+                        .requestMatchers(HttpMethod.GET,"/api/users/**").permitAll()
+                        .requestMatchers(HttpMethod.DELETE,"/api/users/**").permitAll()
                         .requestMatchers("/api/users/login").permitAll()
                         .requestMatchers("/api/**").authenticated() // Other APIs require authentication
                         .anyRequest().authenticated()
                 )
-                .oauth2Login(oauth2 -> oauth2
-                        .defaultSuccessUrl("/api/users/home", true) // Redirect after successful login
-                        .userInfoEndpoint(userInfo -> userInfo
-                                .oidcUserService(new OidcUserService()) // Handles OAuth2 user details
-                        )
-                )
+//                .oauth2Login(oauth2 -> oauth2
+//                        .defaultSuccessUrl("/api/users/home", true) // Redirect after successful login
+//                        .userInfoEndpoint(userInfo -> userInfo
+//                                .oidcUserService(new OidcUserService()) // Handles OAuth2 user details
+//                        )
+//                )
                 .sessionManagement(session -> session.sessionCreationPolicy(STATELESS)); // Stateless sessions for APIs
 
         return http.build();
