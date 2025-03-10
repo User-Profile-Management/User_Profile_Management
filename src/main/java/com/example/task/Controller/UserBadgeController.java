@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/badges")
@@ -17,12 +18,16 @@ public class UserBadgeController {
     }
 
     @PostMapping("/userbadges")
-    public ResponseEntity<String> assignBadge(@RequestBody UserBadgeDTO userBadgeDTO) {
-        return ResponseEntity.ok(userBadgeService.assignBadgeOnProjectCompletion(userBadgeDTO.getUserId(), userBadgeDTO.getProjectId()));
+    public ResponseEntity<String> assignBadge(@RequestBody Map<String, String> request) {
+        String userId = request.get("userId");
+        return ResponseEntity.ok(userBadgeService.assignBadgeOnProjectCompletion(userId));
     }
 
-    @GetMapping("/{userId}/badges")
+
+
+    @GetMapping("/{userId}")
     public ResponseEntity<List<UserBadgeDTO>> getUserBadges(@PathVariable String userId) {
-        return ResponseEntity.ok(userBadgeService.getUserBadge(userId));
+        return ResponseEntity.ok(userBadgeService.getUserBadges(userId));
     }
+
 }

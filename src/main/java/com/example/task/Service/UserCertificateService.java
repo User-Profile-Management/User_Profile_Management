@@ -6,6 +6,7 @@ import com.example.task.Repository.UserCertificateRepository;
 import com.example.task.Repository.CertificateRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -20,19 +21,20 @@ public class UserCertificateService {
         this.certificateRepository = certificateRepository;
     }
 
+    // Get all user certificates
     public List<UserCertificate> getAllUserCertificates() {
         return userCertificateRepository.findAll();
     }
 
-
+    // Get certificates for a specific user
     public List<UserCertificate> getUserCertificatesByUserId(String userId) {
         return userCertificateRepository.findByUserId(userId);
     }
 
-
+    // Add a certificate to a user
     public UserCertificate addUserCertificate(String userId, int certificateId) {
         Certificate certificate = certificateRepository.findById(certificateId)
-                .orElseThrow(() -> new RuntimeException("Certificate not found"));
+                .orElseThrow(() -> new RuntimeException("Certificate not found with ID: " + certificateId));
 
         UserCertificate userCertificate = new UserCertificate();
         userCertificate.setUserId(userId);
@@ -41,8 +43,12 @@ public class UserCertificateService {
         return userCertificateRepository.save(userCertificate);
     }
 
-
+    // Delete a user certificate safely
+    @Transactional
     public void deleteUserCertificate(int id) {
+        if (!userCertificateRepository.existsById(id)) {
+            throw new RuntimeException("UserCertificate not found with ID: " + id);
+        }
         userCertificateRepository.deleteById(id);
     }
 }

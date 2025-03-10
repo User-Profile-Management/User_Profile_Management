@@ -8,17 +8,21 @@ import com.example.task.Entity.UserProject;
 public class UserProjectMapper {
     public static UserProjectDTO mapToUserProjectDTO(UserProject userProject) {
         return new UserProjectDTO(
-                userProject.getId(),
-                userProject.getUser().getId(),
-                userProject.getProject().getId()
+                userProject.getId(),  // Ensure ID is an int
+                userProject.getUser().getUserId(),  // Ensure userId is String
+                userProject.getProject().getId() // Ensure projectId is int
         );
     }
 
     public static UserProject mapToUserProject(UserProjectDTO userProjectDTO, User user, Project project) {
-        return new UserProject(
-                userProjectDTO.getId(),
-                user,
-                project
-        );
+        UserProject userProject = new UserProject();
+
+        // If UserProject has an 'id' field
+        userProject.setId(userProjectDTO.getId());
+
+        userProject.setUser(user);
+        userProject.setProject(project);
+
+        return userProject;
     }
 }

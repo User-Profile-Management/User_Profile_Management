@@ -15,10 +15,12 @@ public class BadgeMapper {
     }
 
     public static Badge mapToBadge(BadgeDTO badgeDTO) {
-        return new Badge(
-                badgeDTO.getId(),
-                badgeDTO.getName(),
-                (badgeDTO.getImage() != null) ? Base64.getDecoder().decode(badgeDTO.getImage()) : null
-        );
+        Badge badge = new Badge();
+        badge.setId(badgeDTO.getId());
+        badge.setName(badgeDTO.getName());
+        if (badgeDTO.getImage() != null) {
+            badge.setImage(Base64.getDecoder().decode(badgeDTO.getImage()));
+        }
+        return badge;
     }
 }

@@ -23,11 +23,11 @@ public class UserProject {
 
     //Assuming User entity exists
     @ManyToOne
-    @JoinColumn(name = "user_id", referencedColumnName = "id", insertable = false, updatable = false)
+    @JoinColumn(name = "user_id", referencedColumnName = "user_id", insertable = false, updatable = false)
     private User user;
 
     //Assuming Project entity exists
     @ManyToOne
-    @JoinColumn(name = "project_id", referencedColumnName = "id", insertable = false, updatable = false)
+    @JoinColumn(name = "project_id", referencedColumnName = "project_id", insertable = false, updatable = false)
     private Project project;
 }

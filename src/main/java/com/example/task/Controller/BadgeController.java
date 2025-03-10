@@ -19,11 +19,28 @@ public class BadgeController {
         this.badgeService = badgeService;
     }
 
-    @PostMapping
-    public ResponseEntity<String> addBadge(@RequestBody Badge badge) {
-        badgeService.saveBadge(badge);
-        return ResponseEntity.ok("Badge added successfully!");
+    @PostMapping( consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<String> addBadge(
+            @RequestParam("name") String name,
+            @RequestParam(value = "file", required = false) MultipartFile file) {
+        try {
+
+            Badge badge = new Badge();
+            badge.setName(name);
+
+
+            if (file != null && !file.isEmpty()) {
+                badge.setImage(file.getBytes());
+            }
+
+
+            badgeService.saveBadge(name, file);
+            return ResponseEntity.ok("Badge added successfully with image!");
+        } catch (IOException e) {
+            return ResponseEntity.badRequest().body("Failed to upload image");
+        }
     }
+
 
     @GetMapping
     public List<Badge> getAllBadges() {
@@ -35,12 +52,5 @@ public class BadgeController {
         return ResponseEntity.ok(badgeService.getBadgeByName(name));
     }
 
-    @PostMapping(value = "/{name}/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<String> uploadBadgeImage(@PathVariable String name, @RequestParam MultipartFile file) {
-        try {
-            return ResponseEntity.ok(badgeService.uploadBadgeImage(name, file));
-        } catch (IOException e) {
-            return ResponseEntity.badRequest().body("Failed to upload image");
-        }
-    }
+
 }

@@ -8,7 +8,6 @@ public class UserBadgeMapper {
         return new UserBadgeDTO(
                 userBadge.getId(),
                 userBadge.getUserId(),
-                userBadge.getProjectId(),
                 userBadge.getBadge().getId()
         );
     }

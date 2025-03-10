@@ -12,6 +12,6 @@ import lombok.Setter;
 public class UserBadgeDTO {
     private int userBadgeId;
     private String userId;
-    private int projectId;
+
     private int badgeId;
 }
