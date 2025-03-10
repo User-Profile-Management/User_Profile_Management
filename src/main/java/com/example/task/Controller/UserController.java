@@ -21,10 +21,6 @@ public class UserController {
         this.userService = userService;
     }
 
-    @GetMapping("/home")
-    public String greet(){
-        return "WELCOME";
-    };
 
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@RequestBody RegisterUserDTO userDTO) {
@@ -49,11 +45,13 @@ public class UserController {
 
             // Register the user with the role
             User registeredUser = userService.registerUser(user, userDTO.getRoleName());
+
             return ResponseEntity.ok("User registered successfully. Awaiting admin approval.");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error registering user: " + e.getMessage());
         }
     }
+
 
 
     @PostMapping("/login")
@@ -74,7 +72,6 @@ public class UserController {
         }
         return ResponseEntity.ok(users);
     }
-
 
     @GetMapping("/{id}")
     public ResponseEntity<?> getUserById(@PathVariable String id) {

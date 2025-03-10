@@ -2,12 +2,13 @@ package com.example.task.Service;
 
 import com.example.task.Entity.Role;
 import com.example.task.Entity.User;
+import com.example.task.Repository.RoleRepository;
 import com.example.task.Repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -68,7 +69,6 @@ public class UserService {
                 passwordEncoder.matches(rawPassword, u.getPassword()) &&
                         u.getStatus() == User.Status.ACTIVE // Check if user is approved
         );
-
     }
 
 
@@ -83,29 +83,30 @@ public class UserService {
     }
 
     public List<User> getAllUsers() {
-        return userRepository.findAll();
+        return userRepository.findAllByDeletedAtIsNull(); // Fetch only non-deleted users
     }
 
     // Get User by ID
     public Optional<User> getUserById(String userId) {
-        return userRepository.findById(userId);
+        return userRepository.findByUserIdAndDeletedAtIsNull(userId);
     }
 
     // Update User Profile
     public User updateUserProfile(String userId, User updatedUser) {
-        return userRepository.findById(userId)
+        return userRepository.findByUserIdAndDeletedAtIsNull(userId)
                 .map(existingUser -> {
                     existingUser.setFullName(updatedUser.getFullName());
                     existingUser.setContactNo(updatedUser.getContactNo());
                     existingUser.setAddress(updatedUser.getAddress());
                     existingUser.setProfilePicture(updatedUser.getProfilePicture());
+                    existingUser.setUpdatedAt(LocalDateTime.now());
                     return userRepository.save(existingUser);
                 }).orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
     }
 
     // Update User by Admin
     public User updateUserByAdmin(String userId, User updatedUser) {
-        return userRepository.findById(userId)
+        return userRepository.findByUserIdAndDeletedAtIsNull(userId)
                 .map(existingUser -> {
                     existingUser.setFullName(updatedUser.getFullName());
                     existingUser.setContactNo(updatedUser.getContactNo());
@@ -127,9 +128,11 @@ public class UserService {
         Optional<User> userOptional = userRepository.findByEmail(email);
         if (userOptional.isPresent()) {
             User user = userOptional.get();
-            user.setPassword(newPassword);
-            userRepository.save(user);
-            return true;
+            if (passwordEncoder.matches(oldPassword, user.getPassword())) {
+                user.setPassword(passwordEncoder.encode(newPassword));
+                userRepository.save(user);
+                return true;
+            }
         }
         return false;
     }
