@@ -3,6 +3,8 @@ package com.example.task.Entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "projects")
 @Getter
@@ -30,7 +32,7 @@ public class Project {
     @Column(name = "status")
     private String status;
 
-    public String getUserId() {
-        return mentor != null ? mentor.getUserId() : null;
-    }
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
+
 }

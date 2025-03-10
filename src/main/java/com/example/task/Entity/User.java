@@ -60,8 +60,9 @@ public class User {
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "deleted_at", updatable = false)
+    @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
+
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
@@ -188,9 +189,10 @@ public class User {
         this.createdAt = createdAt;
     }
 
-    public LocalDateTime getDeletedAt() {
-        return deletedAt;
+    public void softDelete() {
+        this.deletedAt = LocalDateTime.now();
     }
+
 
     public void setDeletedAt(LocalDateTime deletedAt) {
         this.deletedAt = deletedAt;

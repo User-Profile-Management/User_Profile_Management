@@ -73,7 +73,13 @@ public class ProjectService {
         if (userOptional.isPresent()) {
             User user = userOptional.get();
             return projectRepository.findByMentor(user).stream()
-                    .map(p -> new ProjectDTO(p.getId(), p.getProjectName(), p.getStatus(), p.getDescription()))
+                    .map(p -> new ProjectDTO(
+                            p.getId(),
+                            p.getProjectName(),
+                            p.getDescription(),
+                            p.getStatus(),
+                            p.getMentor() != null ? String.valueOf(p.getMentor().getUserId()) : null
+                    ))
                     .collect(Collectors.toList());
         } else {
             throw new RuntimeException("User not found with userId: " + userId);
@@ -87,7 +93,7 @@ public class ProjectService {
             throw new RuntimeException("User not found with ID: " + userId);
         }
 
-        Project project = projectMapper.toEntity(projectDTO);
+        Project project = projectMapper.toEntity(projectDTO, userOptional.get());
         project.setMentor(userOptional.get()); // Assign mentor
         project = projectRepository.save(project);
         return projectMapper.toDTO(project);
@@ -133,9 +139,16 @@ public class ProjectService {
         return projects.stream().map(projectMapper::toDTO).collect(Collectors.toList());
     }
 
-    // Add a new project
     public ProjectDTO createProject(ProjectDTO projectDTO) {
-        Project project = projectMapper.toEntity(projectDTO);
+        Optional<User> mentorOptional = userRepository.findById(projectDTO.getMentorId());
+
+        if (!mentorOptional.isPresent()) {
+            throw new RuntimeException("Mentor not found with ID: " + projectDTO.getMentorId());
+        }
+
+        Project project = projectMapper.toEntity(projectDTO, mentorOptional.get());
+        project.setMentor(mentorOptional.get()); // Ensure mentor is set before saving
+
         project = projectRepository.save(project);
         return projectMapper.toDTO(project);
     }

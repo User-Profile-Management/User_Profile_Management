@@ -21,20 +21,8 @@ public class UserController {
         this.userService = userService;
     }
 
-    @GetMapping("/home")
-    public String greet(){
-        return "WELCOME";
-    };
 
     @PostMapping("/register")
-<<<<<<< HEAD
-    public ResponseEntity<?> registerUser(@RequestBody User user, @RequestParam String roleName) {
-        try {
-            // Ensure user is saved to database first
-            User registeredUser = userService.registerUser(user, roleName);
-
-            // Response message before login
-=======
     public ResponseEntity<?> registerUser(@RequestBody RegisterUserDTO userDTO) {
         try {
             // Ensure roleName is provided
@@ -58,7 +46,6 @@ public class UserController {
             // Register the user with the role
             User registeredUser = userService.registerUser(user, userDTO.getRoleName());
 
->>>>>>> 3a184786dd3f0b4132fd4967c5e52ff40c099b75
             return ResponseEntity.ok("User registered successfully. Awaiting admin approval.");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error registering user: " + e.getMessage());
@@ -66,10 +53,7 @@ public class UserController {
     }
 
 
-<<<<<<< HEAD
-=======
 
->>>>>>> 3a184786dd3f0b4132fd4967c5e52ff40c099b75
     @PostMapping("/login")
     public ResponseEntity<?> loginUser(@RequestParam String email, @RequestParam String password) {
         Optional<User> user = userService.loginUser(email, password);
@@ -80,11 +64,21 @@ public class UserController {
         }
     }
 
+    @GetMapping
+    public ResponseEntity<List<User>> getAllUsers() {
+        List<User> users = userService.getAllUsers();
+
+        if (users.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+
+        return ResponseEntity.ok(users);
+    }
 
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getUserById(@PathVariable String id) {
-        Optional<User> user = userService.getUserById(id);
+    public ResponseEntity<?> getUserById(@PathVariable String Userid) {
+        Optional<User> user = userService.getUserById(Userid);
         return user.map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
@@ -117,10 +111,16 @@ public class UserController {
     }
 
 
+    // Updated soft delete implementation
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<String> deleteUser(@PathVariable String id) {
-        userService.deleteUser(id);
-        return ResponseEntity.ok("User deleted successfully.");
+        Optional<User> user = userService.getUserById(id);
+        if (user.isPresent()) {
+            userService.deleteUser(id);
+            return ResponseEntity.ok("User deleted successfully (soft delete).");
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 
 

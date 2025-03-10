@@ -2,12 +2,12 @@ package com.example.task.Service;
 
 import com.example.task.Entity.Role;
 import com.example.task.Entity.User;
-import com.example.task.Repository.RoleRepository;
 import com.example.task.Repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -15,23 +15,19 @@ import java.util.Optional;
 public class UserService {
     private final UserRepository userRepository;
     private final RoleService roleService;
+    private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserService(UserRepository userRepository, RoleService roleService) {
+    public UserService(UserRepository userRepository, RoleService roleService, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.roleService = roleService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Transactional
     public User registerUser(User user, String roleName) {
         Role role = roleService.assignRole(roleName);
         user.setRole(role);
-<<<<<<< HEAD
-        return userRepository.save(user);
-    }
-
-    // Generate UserID
-=======
         user.setStatus(User.Status.INACTIVE);
         user.setUserId(generateUserId(role));
         user.setPassword(passwordEncoder.encode(user.getPassword()));
@@ -40,7 +36,6 @@ public class UserService {
 
 
     //Generate UserID
->>>>>>> 3a184786dd3f0b4132fd4967c5e52ff40c099b75
     public String generateUserId(Role role) {
         String prefix = "USR"; // Default prefix
         if (role != null) {
@@ -67,21 +62,12 @@ public class UserService {
     }
 
     public Optional<User> loginUser(String email, String rawPassword) {
-<<<<<<< HEAD
-        return userRepository.findByEmail(email);
-    }
-
-    // Get All Users
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
-=======
         Optional<User> user = userRepository.findByEmail(email);
 
         return user.filter(u ->
                 passwordEncoder.matches(rawPassword, u.getPassword()) &&
                         u.getStatus() == User.Status.ACTIVE // Check if user is approved
         );
->>>>>>> 3a184786dd3f0b4132fd4967c5e52ff40c099b75
     }
 
 
@@ -95,26 +81,31 @@ public class UserService {
         return userRepository.findByEmail(email);
     }
 
+    public List<User> getAllUsers() {
+        return userRepository.findAllByDeletedAtIsNull(); // Fetch only non-deleted users
+    }
+
     // Get User by ID
     public Optional<User> getUserById(String userId) {
-        return userRepository.findById(userId);
+        return userRepository.findByUserIdAndDeletedAtIsNull(userId);
     }
 
     // Update User Profile
     public User updateUserProfile(String userId, User updatedUser) {
-        return userRepository.findById(userId)
+        return userRepository.findByUserIdAndDeletedAtIsNull(userId)
                 .map(existingUser -> {
                     existingUser.setFullName(updatedUser.getFullName());
                     existingUser.setContactNo(updatedUser.getContactNo());
                     existingUser.setAddress(updatedUser.getAddress());
                     existingUser.setProfilePicture(updatedUser.getProfilePicture());
+                    existingUser.setUpdatedAt(LocalDateTime.now());
                     return userRepository.save(existingUser);
                 }).orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
     }
 
     // Update User by Admin
     public User updateUserByAdmin(String userId, User updatedUser) {
-        return userRepository.findById(userId)
+        return userRepository.findByUserIdAndDeletedAtIsNull(userId)
                 .map(existingUser -> {
                     existingUser.setFullName(updatedUser.getFullName());
                     existingUser.setContactNo(updatedUser.getContactNo());
@@ -122,23 +113,31 @@ public class UserService {
                     existingUser.setProfilePicture(updatedUser.getProfilePicture());
                     existingUser.setStatus(updatedUser.getStatus());
                     existingUser.setRole(updatedUser.getRole());
+                    existingUser.setUpdatedAt(LocalDateTime.now());
                     return userRepository.save(existingUser);
                 }).orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
     }
 
-    // Delete User
+    // Soft Delete User (Set deletedAt timestamp instead of deleting)
+    @Transactional
     public void deleteUser(String userId) {
-        userRepository.deleteById(userId);
+        userRepository.findById(userId).ifPresent(user -> {
+            user.setDeletedAt(LocalDateTime.now()); // Mark as deleted
+            userRepository.save(user); // Save changes
+        });
     }
+
 
     // Update Password
     public boolean updatePassword(String email, String oldPassword, String newPassword) {
         Optional<User> userOptional = userRepository.findByEmail(email);
         if (userOptional.isPresent()) {
             User user = userOptional.get();
-            user.setPassword(newPassword);
-            userRepository.save(user);
-            return true;
+            if (passwordEncoder.matches(oldPassword, user.getPassword())) {
+                user.setPassword(passwordEncoder.encode(newPassword));
+                userRepository.save(user);
+                return true;
+            }
         }
         return false;
     }

@@ -2,8 +2,10 @@ package com.example.task.Config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 //import org.springframework.security.authentication.AuthenticationManagerBuilder;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -25,35 +27,45 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable()) // Disable CSRF for APIs
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/users/register").permitAll()
-                        .requestMatchers("/api/roles/**").permitAll()
                         .requestMatchers("/api/users/login").permitAll()
-<<<<<<< HEAD
+                                .requestMatchers("/api/roles/**").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/api/users/**").permitAll() // Allow GET requests
+                                .requestMatchers(HttpMethod.DELETE, "/api/users/**").permitAll()
+                                .requestMatchers(HttpMethod.POST, "/api/projects/**").permitAll() // Allow GET requests
+                                .requestMatchers(HttpMethod.GET, "/api/projects/**").permitAll() // Allow GET requests
+                                .requestMatchers(HttpMethod.DELETE, "/api/projects/**").permitAll()
+                                .requestMatchers(HttpMethod.PUT, "/api/projects/**").permitAll()
                         .requestMatchers("/api/**").authenticated()
                         .anyRequest().authenticated()
-                )
-                .oauth2Login(oauth2 -> oauth2
-                        .defaultSuccessUrl("/api/users/home", false) // Redirect to home only when necessary
-=======
-                        .requestMatchers("/api/**").authenticated() // Other APIs require authentication
-                        .anyRequest().authenticated()
-                )
-                .oauth2Login(oauth2 -> oauth2
-                        .defaultSuccessUrl("/api/users/home", true) // Redirect after successful login
->>>>>>> 3a184786dd3f0b4132fd4967c5e52ff40c099b75
-                        .userInfoEndpoint(userInfo -> userInfo
-                                .oidcUserService(new OidcUserService()) // Handles OAuth2 user details
-                        )
-                )
-<<<<<<< HEAD
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED) // Allow session for OAuth2
+//                )
+//                .oauth2Login(Customizer.withDefaults())
+//                .sessionManagement(session -> session
+//                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED) // Required for OAuth2
                 );
-=======
-                .sessionManagement(session -> session.sessionCreationPolicy(STATELESS)); // Stateless sessions for APIs
->>>>>>> 3a184786dd3f0b4132fd4967c5e52ff40c099b75
 
         return http.build();
     }
+//    @Bean
+//    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+//        http
+//                .csrf(csrf -> csrf.disable()) // Disable CSRF for APIs
+//                .authorizeHttpRequests(auth -> auth
+//                        .requestMatchers("/api/users/register").permitAll()
+//                        .requestMatchers("/api/roles/**").permitAll()
+//                        .requestMatchers("/api/users/login").permitAll()
+//                        .requestMatchers("/api/**").authenticated() // Other APIs require authentication
+//                        .anyRequest().authenticated()
+//                )
+////                .oauth2Login(oauth2 -> oauth2
+////                        .defaultSuccessUrl("/api/users/home", true) // Redirect after successful login
+////                        .userInfoEndpoint(userInfo -> userInfo
+////                                .oidcUserService(new OidcUserService()) // Handles OAuth2 user details
+////                        )
+////                )
+//                .sessionManagement(session -> session.sessionCreationPolicy(STATELESS)); // Stateless sessions for APIs
+//
+//        return http.build();
+//    }
 
 
     @Bean
