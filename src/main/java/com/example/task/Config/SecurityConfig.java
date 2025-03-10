@@ -31,10 +31,10 @@ public class SecurityConfig {
                                 .requestMatchers("/api/roles/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/api/users/**").permitAll() // Allow GET requests
                                 .requestMatchers(HttpMethod.DELETE, "/api/users/**").permitAll()
-                                .requestMatchers(HttpMethod.POST, "/api/projects/**").permitAll() // Allow GET requests
-                                .requestMatchers(HttpMethod.GET, "/api/projects/**").permitAll() // Allow GET requests
-                                .requestMatchers(HttpMethod.DELETE, "/api/projects/**").permitAll()
-                                .requestMatchers(HttpMethod.PUT, "/api/projects/**").permitAll()
+                                .requestMatchers(HttpMethod.POST, "/projects/**").permitAll() // Allow GET requests
+                                .requestMatchers(HttpMethod.GET, "/projects/**").permitAll() // Allow GET requests
+                                .requestMatchers(HttpMethod.DELETE, "/projects/**").permitAll()
+                                .requestMatchers(HttpMethod.PUT, "/projects/**").permitAll()
                         .requestMatchers("/api/**").authenticated()
                         .anyRequest().authenticated()
 //                )

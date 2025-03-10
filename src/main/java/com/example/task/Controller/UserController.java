@@ -111,7 +111,7 @@ public class UserController {
     }
 
 
-    // Updated soft delete implementation
+    // Soft delete implementation
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<String> deleteUser(@PathVariable String id) {
         Optional<User> user = userService.getUserById(id);

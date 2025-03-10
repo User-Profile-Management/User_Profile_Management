@@ -11,9 +11,6 @@ import java.util.Optional;
 @Repository
 public interface ProjectRepository extends JpaRepository<Project, Integer> {
 
-    // Find all projects assigned to a specific mentor (User)
-    List<Project> findByMentor(User mentor);
-
     // Find a project by its ID and Mentor (for user-specific project operations)
     Optional<Project> findByIdAndMentor(Integer projectId, User mentor);
 
@@ -22,4 +19,11 @@ public interface ProjectRepository extends JpaRepository<Project, Integer> {
 
     // Count projects based on their status
     Integer countByStatus(String status);
+
+    // Fetch only active projects
+    List<Project> findByDeletedAtIsNull();
+
+    // Fetch only active projects for a mentor
+    List<Project> findByMentorAndDeletedAtIsNull(User mentor);
+
 }
