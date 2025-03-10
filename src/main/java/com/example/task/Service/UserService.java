@@ -2,7 +2,6 @@ package com.example.task.Service;
 
 import com.example.task.Entity.Role;
 import com.example.task.Entity.User;
-import com.example.task.Repository.RoleRepository;
 import com.example.task.Repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -114,14 +113,20 @@ public class UserService {
                     existingUser.setProfilePicture(updatedUser.getProfilePicture());
                     existingUser.setStatus(updatedUser.getStatus());
                     existingUser.setRole(updatedUser.getRole());
+                    existingUser.setUpdatedAt(LocalDateTime.now());
                     return userRepository.save(existingUser);
                 }).orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
     }
 
-    // Delete User
+    // Soft Delete User (Set deletedAt timestamp instead of deleting)
+    @Transactional
     public void deleteUser(String userId) {
-        userRepository.deleteById(userId);
+        userRepository.findById(userId).ifPresent(user -> {
+            user.setDeletedAt(LocalDateTime.now()); // Mark as deleted
+            userRepository.save(user); // Save changes
+        });
     }
+
 
     // Update Password
     public boolean updatePassword(String email, String oldPassword, String newPassword) {

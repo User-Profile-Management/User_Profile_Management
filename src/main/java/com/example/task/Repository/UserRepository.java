@@ -20,5 +20,8 @@ public interface UserRepository extends JpaRepository<User, String> {
 
     Optional<User> findByUserIdAndDeletedAtIsNull(String userId);
 
+    List<User> findByStatusAndDeletedAtIsNull(User.Status status);
+
+
     List<User> findAllByDeletedAtIsNull(); // Fetch all users except deleted ones
 }
