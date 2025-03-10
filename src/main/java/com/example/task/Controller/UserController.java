@@ -53,16 +53,16 @@ public class UserController {
     }
 
 
-
     @PostMapping("/login")
-    public ResponseEntity<?> loginUser(@RequestParam String email, @RequestParam String password) {
-        Optional<User> user = userService.loginUser(email, password);
+    public ResponseEntity<?> loginUser(@RequestBody RegisterUserDTO.LoginRequest loginRequest) {
+        Optional<User> user = userService.loginUser(loginRequest.getEmail(), loginRequest.getPassword());
         if (user.isPresent()) {
             return ResponseEntity.ok(user.get());
         } else {
             return ResponseEntity.status(400).body("Invalid email or password");
         }
     }
+
 
     @GetMapping
     public ResponseEntity<List<User>> getAllUsers() {
@@ -77,8 +77,8 @@ public class UserController {
 
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getUserById(@PathVariable String Userid) {
-        Optional<User> user = userService.getUserById(Userid);
+    public ResponseEntity<?> getUserById(@PathVariable String id) {
+        Optional<User> user = userService.getUserById(id);
         return user.map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
@@ -124,11 +124,12 @@ public class UserController {
     }
 
 
+
+
     @PutMapping("/update-password")
-    public ResponseEntity<String> updatePassword(@RequestParam String email,
-                                                 @RequestParam String oldPassword,
-                                                 @RequestParam String newPassword) {
-        boolean success = userService.updatePassword(email, oldPassword, newPassword);
+    public ResponseEntity<String> updatePassword(@RequestBody RegisterUserDTO.UpdatePasswordRequest request) {
+        boolean success = userService.updatePassword(request.getEmail(), request.getOldPassword(), request.getNewPassword());
+
         if (success) {
             return ResponseEntity.ok("Password updated successfully.");
         } else {

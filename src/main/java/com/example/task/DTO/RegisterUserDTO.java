@@ -44,4 +44,49 @@ public class RegisterUserDTO {
 
     public String getRoleName() { return roleName; }
     public void setRoleName(String roleName) { this.roleName = roleName; }
+    // Nested DTO for Updating Password
+    public static class UpdatePasswordRequest {
+        private String email;
+        private String oldPassword;
+        private String newPassword;
+
+        // Constructors
+        public UpdatePasswordRequest() {}
+
+        public UpdatePasswordRequest(String email, String oldPassword, String newPassword) {
+            this.email = email;
+            this.oldPassword = oldPassword;
+            this.newPassword = newPassword;
+        }
+
+        // Getters and Setters
+        public String getEmail() { return email; }
+        public void setEmail(String email) { this.email = email; }
+
+        public String getOldPassword() { return oldPassword; }
+        public void setOldPassword(String oldPassword) { this.oldPassword = oldPassword; }
+
+        public String getNewPassword() { return newPassword; }
+        public void setNewPassword(String newPassword) { this.newPassword = newPassword; }
+    }
+    // Nested DTO for Login Request
+        public static class LoginRequest {
+        private String email;
+        private String password;
+
+        // Constructors
+        public LoginRequest() {}
+
+        public LoginRequest(String email, String password) {
+            this.email = email;
+            this.password = password;
+        }
+
+        // Getters and Setters
+        public String getEmail() { return email; }
+        public void setEmail(String email) { this.email = email; }
+
+        public String getPassword() { return password; }
+        public void setPassword(String password) { this.password = password; }
+    }
 }

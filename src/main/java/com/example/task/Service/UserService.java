@@ -91,13 +91,36 @@ public class UserService {
     }
 
     // Update User Profile
+//    public User updateUserProfile(String userId, User updatedUser) {
+//        return userRepository.findByUserIdAndDeletedAtIsNull(userId)
+//                .map(existingUser -> {
+//                    existingUser.setFullName(updatedUser.getFullName());
+//                    existingUser.setContactNo(updatedUser.getContactNo());
+//                    existingUser.setAddress(updatedUser.getAddress());
+//                    existingUser.setProfilePicture(updatedUser.getProfilePicture());
+//                    existingUser.setUpdatedAt(LocalDateTime.now());
+//                    return userRepository.save(existingUser);
+//                }).orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+//    }
+
     public User updateUserProfile(String userId, User updatedUser) {
         return userRepository.findByUserIdAndDeletedAtIsNull(userId)
                 .map(existingUser -> {
-                    existingUser.setFullName(updatedUser.getFullName());
-                    existingUser.setContactNo(updatedUser.getContactNo());
-                    existingUser.setAddress(updatedUser.getAddress());
-                    existingUser.setProfilePicture(updatedUser.getProfilePicture());
+                    if (updatedUser.getFullName() != null) {
+                        existingUser.setFullName(updatedUser.getFullName());
+                    }
+                    if (updatedUser.getContactNo() != null) {
+                        existingUser.setContactNo(updatedUser.getContactNo());
+                    }
+                    if (updatedUser.getAddress() != null) {
+                        existingUser.setAddress(updatedUser.getAddress());
+                    }
+                    if (updatedUser.getProfilePicture() != null) {
+                        existingUser.setProfilePicture(updatedUser.getProfilePicture());
+                    }
+                    if (updatedUser.getStatus() != null) {
+                        existingUser.setStatus(updatedUser.getStatus());
+                    }
                     existingUser.setUpdatedAt(LocalDateTime.now());
                     return userRepository.save(existingUser);
                 }).orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));

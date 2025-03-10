@@ -38,7 +38,7 @@ public class User {
     @Column(name = "date_of_birth")
     private LocalDate dateOfBirth;
 
-    @Column(name = "contact_no", nullable = false, unique = true)
+    @Column(name = "contact_no")
     private String contactNo;
 
     @Column(name = "address")

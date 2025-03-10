@@ -27,6 +27,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/users/register").permitAll()
                         .requestMatchers("/api/roles/**").permitAll()
                         .requestMatchers(HttpMethod.GET,"/api/users/**").permitAll()
+                        .requestMatchers(HttpMethod.PUT,"/api/users/**").permitAll()
                         .requestMatchers(HttpMethod.DELETE,"/api/users/**").permitAll()
                         .requestMatchers("/api/users/login").permitAll()
                         .requestMatchers("/api/**").authenticated() // Other APIs require authentication
