@@ -30,6 +30,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/users/login").permitAll()
                                 .requestMatchers("/api/roles/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/api/users/**").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/api/user-projects").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/api/user-projects/**").permitAll()
                                 .requestMatchers(HttpMethod.DELETE, "/api/users/**").permitAll()
                                 .requestMatchers(HttpMethod.POST, "/api/projects/**").permitAll()
                                 .requestMatchers(HttpMethod.POST, "/api/badges/userbadges").permitAll()

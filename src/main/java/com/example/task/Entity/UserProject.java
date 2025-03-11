@@ -2,6 +2,8 @@ package com.example.task.Entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 
 @Entity
@@ -21,13 +23,15 @@ public class UserProject {
     @Column(name = "project_id", nullable = false)
     private int projectId;
 
-    //Assuming User entity exists
+    
     @ManyToOne
     @JoinColumn(name = "user_id", referencedColumnName = "user_id", insertable = false, updatable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private User user;
 
-    //Assuming Project entity exists
+
     @ManyToOne
     @JoinColumn(name = "project_id", referencedColumnName = "project_id", insertable = false, updatable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Project project;
 }
