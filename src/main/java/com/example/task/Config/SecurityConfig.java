@@ -33,9 +33,9 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.DELETE, "/api/users/**").permitAll()
                                 .requestMatchers(HttpMethod.POST, "/api/projects/**").permitAll()
                                 .requestMatchers(HttpMethod.POST, "/api/badges/userbadges").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/api/badges/userbadges/**").permitAll()
                                 .requestMatchers(HttpMethod.POST, "/api/user-projects").permitAll()
-                                .requestMatchers(HttpMethod.POST, "/api/badges").permitAll()
-                                .requestMatchers(HttpMethod.GET, "/api/badges").permitAll()
+                                
                                 .requestMatchers(HttpMethod.GET, "/api/projects/**").permitAll()
                                 .requestMatchers(HttpMethod.DELETE, "/api/projects/**").permitAll()
                                 .requestMatchers(HttpMethod.PUT, "/api/projects/**").permitAll()
