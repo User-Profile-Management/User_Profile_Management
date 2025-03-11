@@ -49,12 +49,5 @@ public class BadgeService {
                 .orElseThrow(() -> new RuntimeException("Badge not found"));
     }
 
-    public String uploadBadgeImage(String name, MultipartFile file) throws IOException {
-        Badge badge = badgeRepository.findByName(name)
-                .orElseThrow(() -> new RuntimeException("Badge not found"));
 
-        badge.setImage(file.getBytes());
-        badgeRepository.save(badge);
-        return "Image uploaded successfully!";
-    }
 }

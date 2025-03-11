@@ -29,13 +29,14 @@ public class SecurityConfig {
                         .requestMatchers("/api/users/register").permitAll()
                         .requestMatchers("/api/users/login").permitAll()
                                 .requestMatchers("/api/roles/**").permitAll()
-                                .requestMatchers(HttpMethod.GET, "/api/users/**").permitAll() // Allow GET requests
+                                .requestMatchers(HttpMethod.GET, "/api/users/**").permitAll()
                                 .requestMatchers(HttpMethod.DELETE, "/api/users/**").permitAll()
-                                .requestMatchers(HttpMethod.POST, "/api/projects/**").permitAll() // Allow GET requests
+                                .requestMatchers(HttpMethod.POST, "/api/projects/**").permitAll()
                                 .requestMatchers(HttpMethod.POST, "/api/badges/userbadges").permitAll()
                                 .requestMatchers(HttpMethod.POST, "/api/user-projects").permitAll()
                                 .requestMatchers(HttpMethod.POST, "/api/badges").permitAll()
-                                .requestMatchers(HttpMethod.GET, "/api/projects/**").permitAll() // Allow GET requests
+                                .requestMatchers(HttpMethod.GET, "/api/badges").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/api/projects/**").permitAll()
                                 .requestMatchers(HttpMethod.DELETE, "/api/projects/**").permitAll()
                                 .requestMatchers(HttpMethod.PUT, "/api/projects/**").permitAll()
                         .requestMatchers("/api/**").authenticated()
@@ -43,7 +44,7 @@ public class SecurityConfig {
 //                )
 //                .oauth2Login(Customizer.withDefaults())
 //                .sessionManagement(session -> session
-//                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED) // Required for OAuth2
+//                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
                 );
 
         return http.build();
@@ -56,7 +57,7 @@ public class SecurityConfig {
 //                        .requestMatchers("/api/users/register").permitAll()
 //                        .requestMatchers("/api/roles/**").permitAll()
 //                        .requestMatchers("/api/users/login").permitAll()
-//                        .requestMatchers("/api/**").authenticated() // Other APIs require authentication
+//                        .requestMatchers("/api/**").authenticated() 
 //                        .anyRequest().authenticated()
 //                )
 ////                .oauth2Login(oauth2 -> oauth2

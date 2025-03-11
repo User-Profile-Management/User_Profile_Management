@@ -25,7 +25,7 @@ public class UserBadgeController {
 
 
 
-    @GetMapping("/{userId}")
+    @GetMapping("/userbadges/{userId}") //Added @GetMapping
     public ResponseEntity<List<UserBadgeDTO>> getUserBadges(@PathVariable String userId) {
         return ResponseEntity.ok(userBadgeService.getUserBadges(userId));
     }
