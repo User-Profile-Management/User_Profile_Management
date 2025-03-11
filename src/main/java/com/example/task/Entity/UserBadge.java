@@ -20,11 +20,10 @@ public class UserBadge {
     @Column(name = "user_id", nullable = false)
     private String userId;
 
-    @Column(name = "project_id", nullable = false)
-    private int projectId;
+
 
     @ManyToOne
     @JoinColumn(name = "badge_id", referencedColumnName = "id")
-    @PrimaryKeyJoinColumn
     private Badge badge;
+
 }
