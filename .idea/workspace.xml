@@ -4,36 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="d0aaab37-5217-4bd0-8a96-71030adad323" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/task/Config/DataInitializer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/task/Config/DataInitializer.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/task/Config/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/task/Config/SecurityConfig.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/task/Controller/BadgeController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/task/Controller/BadgeController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/task/Controller/UserBadgeController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/task/Controller/UserBadgeController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/task/DTO/UserBadgeDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/task/DTO/UserBadgeDTO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/task/Entity/Badge.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/task/Entity/Badge.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/task/Mapper/UserBadgeMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/task/Mapper/UserBadgeMapper.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/task/Repository/RoleRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/task/Repository/RoleRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/task/Service/BadgeService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/task/Service/BadgeService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/task/Service/UserBadgeService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/task/Service/UserBadgeService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/application.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/task/Config/DataInitializer.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/task/Config/DataInitializer.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/task/Config/SecurityConfig.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/task/Config/SecurityConfig.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/task/Controller/BadgeController.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/task/Controller/BadgeController.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/task/Controller/UserBadgeController.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/task/Controller/UserBadgeController.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/task/DTO/UserBadgeDTO.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/task/DTO/UserBadgeDTO.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/task/Entity/Badge.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/task/Entity/Badge.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/task/Mapper/UserBadgeMapper.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/task/Mapper/UserBadgeMapper.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/task/Repository/RoleRepository.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/task/Repository/RoleRepository.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/task/Service/BadgeService.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/task/Service/BadgeService.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/task/Service/UserBadgeService.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/task/Service/UserBadgeService.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/maven-archiver/pom.properties" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/TEST-com.example.task.TaskApplicationTests.xml" beforeDir="false" afterPath="$PROJECT_DIR$/target/surefire-reports/TEST-com.example.task.TaskApplicationTests.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/com.example.task.TaskApplicationTests.txt" beforeDir="false" afterPath="$PROJECT_DIR$/target/surefire-reports/com.example.task.TaskApplicationTests.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/task-0.0.1-SNAPSHOT.jar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/task-0.0.1-SNAPSHOT.jar.original" beforeDir="false" />
-    </list>
+    <list default="true" id="d0aaab37-5217-4bd0-8a96-71030adad323" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
