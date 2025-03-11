@@ -28,13 +28,17 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/users/register").permitAll()
                         .requestMatchers("/api/users/login").permitAll()
-                                .requestMatchers("/api/roles/**").permitAll()
+                                .requestMatchers(HttpMethod.GET,"/api/roles/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/api/users/**").permitAll() // Allow GET requests
                                 .requestMatchers(HttpMethod.DELETE, "/api/users/**").permitAll()
-                                .requestMatchers(HttpMethod.POST, "/projects/**").permitAll() // Allow GET requests
+                                .requestMatchers(HttpMethod.POST, "/projects/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/projects/**").permitAll() // Allow GET requests
                                 .requestMatchers(HttpMethod.DELETE, "/projects/**").permitAll()
                                 .requestMatchers(HttpMethod.PUT, "/projects/**").permitAll()
+                                .requestMatchers(HttpMethod.POST, "/user/*/certificates").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/user/*/certificates").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/user/*/certificates/*/download").permitAll()
+
                         .requestMatchers("/api/**").authenticated()
                         .anyRequest().authenticated()
 //                )
@@ -56,12 +60,12 @@ public class SecurityConfig {
 //                        .requestMatchers("/api/**").authenticated() // Other APIs require authentication
 //                        .anyRequest().authenticated()
 //                )
-////                .oauth2Login(oauth2 -> oauth2
-////                        .defaultSuccessUrl("/api/users/home", true) // Redirect after successful login
-////                        .userInfoEndpoint(userInfo -> userInfo
-////                                .oidcUserService(new OidcUserService()) // Handles OAuth2 user details
-////                        )
-////                )
+//                .oauth2Login(oauth2 -> oauth2
+//                       .defaultSuccessUrl("/api/users/home", true) // Redirect after successful login
+//                        .userInfoEndpoint(userInfo -> userInfo
+//                                .oidcUserService(new OidcUserService()) // Handles OAuth2 user details
+//                        )
+//                )
 //                .sessionManagement(session -> session.sessionCreationPolicy(STATELESS)); // Stateless sessions for APIs
 //
 //        return http.build();
