@@ -6,6 +6,8 @@ import lombok.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
@@ -21,12 +23,11 @@ public class User {
     @Column(name = "user_id")
     private String userId;
 
-    @Column(name = "google_id", unique = true)
-    private String googleId;
 
-    @ManyToOne
+
+    @ManyToOne(fetch = FetchType.LAZY) // Change to EAGER if needed
     @JoinColumn(name = "role_id", nullable = false)
-    @OnDelete(action = OnDeleteAction.CASCADE)
+    @Fetch(FetchMode.JOIN)  // Ensures role is fetched in a single query
     private Role role;
 
     @Column(name = "full_name", nullable = false)
@@ -51,8 +52,9 @@ public class User {
     @Column(name = "password", nullable = false)
     private String password;
 
-    @Column(name = "profile_picture")
-    private String profilePicture;
+    @Column(nullable = true)
+    private String profilePicture; // Profile picture can be null
+
 
     @Column(name = "email", nullable = false, unique = true)
     private String email;
@@ -93,13 +95,7 @@ public class User {
         this.userId = userId;
     }
 
-    public String getGoogleId() {
-        return googleId;
-    }
 
-    public void setGoogleId(String googleId) {
-        this.googleId = googleId;
-    }
 
     public Role getRole() {
         return role;

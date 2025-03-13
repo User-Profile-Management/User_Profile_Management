@@ -25,25 +25,52 @@ public class UserController {
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@RequestBody RegisterUserDTO userDTO) {
         try {
-            // Ensure roleName is provided
+
+            if (userDTO.getFullName() == null || userDTO.getFullName().trim().isEmpty()) {
+                return ResponseEntity.badRequest().body("Full Name is required.");
+            }
+            if (userDTO.getEmail() == null || userDTO.getEmail().trim().isEmpty()) {
+                return ResponseEntity.badRequest().body("Email is required.");
+            }
+            if (userDTO.getPassword() == null || userDTO.getPassword().trim().isEmpty()) {
+                return ResponseEntity.badRequest().body("Password is required.");
+            }
+            // Validate password length (minimum 8 characters)
+            if (userDTO.getPassword().length() < 8) {
+                return ResponseEntity.badRequest().body("Password must be at least 8 characters long.");
+            }
+            if (userDTO.getContactNo() == null || userDTO.getContactNo().trim().isEmpty()) {
+                return ResponseEntity.badRequest().body("Contact Number is required.");
+            }
+
+            if (!userDTO.getContactNo().matches("\\d{10}")) {
+                return ResponseEntity.badRequest().body("Contact Number must be exactly 10 digits.");
+            }
+            if (userDTO.getDateOfBirth() == null) {
+                return ResponseEntity.badRequest().body("Date of Birth is required.");
+            }
+
+            if (userDTO.getAddress() == null || userDTO.getAddress().trim().isEmpty()) {
+                return ResponseEntity.badRequest().body("Address is required.");
+            }
             if (userDTO.getRoleName() == null || userDTO.getRoleName().trim().isEmpty()) {
-                return ResponseEntity.badRequest().body("Role is required in the request body");
+                return ResponseEntity.badRequest().body("Role is required.");
             }
 
             // Convert DTO to User entity
             User user = new User();
-            user.setGoogleId(userDTO.getGoogleId());
+
             user.setFullName(userDTO.getFullName());
-            user.setEmergencyContact(userDTO.getEmergencyContact());
+
             user.setDateOfBirth(userDTO.getDateOfBirth());
             user.setPassword(userDTO.getPassword());
             user.setContactNo(userDTO.getContactNo());
             user.setAddress(userDTO.getAddress());
             user.setStatus(User.Status.INACTIVE); // Default status
-            user.setProfilePicture(userDTO.getProfilePicture());
+            user.setProfilePicture(null);
             user.setEmail(userDTO.getEmail());
 
-            // Register the user with the role
+
             User registeredUser = userService.registerUser(user, userDTO.getRoleName());
 
             return ResponseEntity.ok("User registered successfully. Awaiting admin approval.");
@@ -53,15 +80,7 @@ public class UserController {
     }
 
 
-    @PostMapping("/login")
-    public ResponseEntity<?> loginUser(@RequestBody RegisterUserDTO.LoginRequest loginRequest) {
-        Optional<User> user = userService.loginUser(loginRequest.getEmail(), loginRequest.getPassword());
-        if (user.isPresent()) {
-            return ResponseEntity.ok(user.get());
-        } else {
-            return ResponseEntity.status(400).body("Invalid email or password");
-        }
-    }
+
 
 
     @GetMapping
@@ -87,12 +106,18 @@ public class UserController {
     @PutMapping("/update/{id}")
     public ResponseEntity<?> updateUserProfile(@PathVariable String id, @RequestBody User updatedUser) {
         try {
+
+            if (updatedUser.getContactNo() != null && !updatedUser.getContactNo().matches("\\d{10}")) {
+                return ResponseEntity.badRequest().body("Contact Number must be exactly 10 digits.");
+            }
+
             User user = userService.updateUserProfile(id, updatedUser);
             return ResponseEntity.ok(user);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
 
     @PutMapping("/admin/update/{id}")
     public ResponseEntity<?> updateUserByAdmin(@PathVariable String id, @RequestBody User updatedUser) {
@@ -104,6 +129,44 @@ public class UserController {
         }
     }
 
+    @GetMapping("/students")
+    public ResponseEntity<List<User>> getAllActiveStudents() {
+        List<User> students = userService.getActiveUsersByRole("STUDENT");
+
+        if (students.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(students);
+    }
+
+
+    @GetMapping("/mentors")
+    public ResponseEntity<List<User>> getAllActiveMentors() {
+        List<User> mentors = userService.getActiveUsersByRole("MENTOR");
+
+        if (mentors.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(mentors);
+    }
+
+    @GetMapping("/mentors/active/count")
+    public ResponseEntity<Long> getActiveMentorCount() {
+        Long count = userService.getActiveMentorCount();
+        return ResponseEntity.ok(count);
+    }
+
+
+    @GetMapping("/students/active/count")
+    public ResponseEntity<Long> getActiveStudentCount() {
+        Long count = userService.getActiveStudentCount();
+        return ResponseEntity.ok(count);
+    }
+
+
+
+
+
 
     @GetMapping("/pending")
     public ResponseEntity<List<User>> getPendingApprovalUsers() {
@@ -111,7 +174,7 @@ public class UserController {
     }
 
 
-    // Updated soft delete implementation
+
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<String> deleteUser(@PathVariable String id) {
         Optional<User> user = userService.getUserById(id);
