@@ -1,5 +1,6 @@
 package com.example.task.Service;
 
+import com.example.task.DTO.ResponseDTO;
 import com.example.task.Entity.Role;
 import com.example.task.Entity.User;
 import com.example.task.Repository.UserRepository;
@@ -16,12 +17,15 @@ public class UserService {
     private final UserRepository userRepository;
     private final RoleService roleService;
     private final PasswordEncoder passwordEncoder;
+    private final UserBadgeService userBadgeService;
+
 
     @Autowired
-    public UserService(UserRepository userRepository, RoleService roleService, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, RoleService roleService, PasswordEncoder passwordEncoder, UserBadgeService userBadgeService) {
         this.userRepository = userRepository;
         this.roleService = roleService;
         this.passwordEncoder = passwordEncoder;
+        this.userBadgeService = userBadgeService;
     }
 
     @Transactional
@@ -33,11 +37,22 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         return userRepository.save(user);
     }
+    public Optional<ResponseDTO> getUserById(String userId) {
+        return userRepository.findByUserIdAndDeletedAtIsNull(userId)
+                .map(ResponseDTO::new);
+    }
+
+    public List<ResponseDTO> getAllUsers() {
+        return userRepository.findAllByDeletedAtIsNull()
+                .stream()
+                .map(ResponseDTO::new)
+                .toList();
+    }
 
 
-    //Generate UserID
+
     public String generateUserId(Role role) {
-        String prefix = "USR"; // Default prefix
+        String prefix = "USR";
         if (role != null) {
             switch (role.getRoleName().toUpperCase()) {
                 case "STUDENT":
@@ -57,7 +72,7 @@ public class UserService {
 
     @Transactional
     public User createUser(User user) {
-        user.setUserId(generateUserId(user.getRole())); // Assign generated ID
+        user.setUserId(generateUserId(user.getRole()));
         return userRepository.save(user);
     }
 
@@ -66,7 +81,7 @@ public class UserService {
 
         return user.filter(u ->
                 passwordEncoder.matches(rawPassword, u.getPassword()) &&
-                        u.getStatus() == User.Status.ACTIVE // Check if user is approved
+                        u.getStatus() == User.Status.ACTIVE
         );
     }
 
@@ -81,23 +96,29 @@ public class UserService {
         return userRepository.findByEmail(email);
     }
 
-    public List<User> getAllUsers() {
-        return userRepository.findAllByDeletedAtIsNull(); // Fetch only non-deleted users
-    }
 
-    // Get User by ID
-    public Optional<User> getUserById(String userId) {
-        return userRepository.findByUserIdAndDeletedAtIsNull(userId);
-    }
+
 
     // Update User Profile
-    public User updateUserProfile(String userId, User updatedUser) {
+    public User updateUserProfile(String userId, User updatedUser)
+    {
         return userRepository.findByUserIdAndDeletedAtIsNull(userId)
                 .map(existingUser -> {
-                    existingUser.setFullName(updatedUser.getFullName());
-                    existingUser.setContactNo(updatedUser.getContactNo());
-                    existingUser.setAddress(updatedUser.getAddress());
-                    existingUser.setProfilePicture(updatedUser.getProfilePicture());
+                    if (updatedUser.getFullName() != null) {
+                        existingUser.setFullName(updatedUser.getFullName());
+                    }
+                    if (updatedUser.getContactNo() != null) {
+                        existingUser.setContactNo(updatedUser.getContactNo());
+                    }
+                    if (updatedUser.getAddress() != null) {
+                        existingUser.setAddress(updatedUser.getAddress());
+                    }
+                    if (updatedUser.getProfilePicture() != null) {
+                        existingUser.setProfilePicture(updatedUser.getProfilePicture());
+                    }
+                    if (updatedUser.getStatus() != null) {
+                        existingUser.setStatus(updatedUser.getStatus());
+                    }
                     existingUser.setUpdatedAt(LocalDateTime.now());
                     return userRepository.save(existingUser);
                 }).orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
@@ -122,10 +143,14 @@ public class UserService {
     @Transactional
     public void deleteUser(String userId) {
         userRepository.findById(userId).ifPresent(user -> {
-            user.setDeletedAt(LocalDateTime.now()); // Mark as deleted
+            user.setDeletedAt(LocalDateTime.now()); // Soft delete user
             userRepository.save(user); // Save changes
+
+            // Soft delete all related user badges
+            userBadgeService.softDeleteUserBadges(userId);
         });
     }
+
 
 
     // Update Password

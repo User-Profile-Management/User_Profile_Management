@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/projects")
+@RequestMapping("/projects")
 public class ProjectController {
 
     private final ProjectService projectService;
@@ -36,6 +36,12 @@ public class ProjectController {
     public ResponseEntity<String> deleteProject(@PathVariable Integer projectId) {
         projectService.deleteProject(projectId);
         return ResponseEntity.ok("Project deleted successfully.");
+    }
+    // Get a specific project by ID
+    @GetMapping("/{projectId}")
+    public ResponseEntity<ProjectDTO> getProjectById(@PathVariable Integer projectId) {
+        ProjectDTO project = projectService.getProjectById(projectId);
+        return project != null ? ResponseEntity.ok(project) : ResponseEntity.notFound().build();
     }
 
     // Get ongoing project count

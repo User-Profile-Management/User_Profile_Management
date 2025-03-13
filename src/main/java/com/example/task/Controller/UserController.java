@@ -1,7 +1,9 @@
 package com.example.task.Controller;
 
 import com.example.task.DTO.RegisterUserDTO;
+import com.example.task.DTO.ResponseDTO;
 import com.example.task.Entity.User;
+import com.example.task.Repository.UserRepository;
 import com.example.task.Service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +17,8 @@ import java.util.Optional;
 public class UserController {
 
     private final UserService userService;
+    @Autowired
+    private UserRepository userRepository;
 
     @Autowired
     public UserController(UserService userService) {
@@ -55,7 +59,7 @@ public class UserController {
 
 
     @PostMapping("/login")
-    public ResponseEntity<?> loginUser(@RequestParam String email, @RequestParam String password) {
+    public ResponseEntity<?> loginUser(@RequestBody String email, @RequestBody String password) {
         Optional<User> user = userService.loginUser(email, password);
         if (user.isPresent()) {
             return ResponseEntity.ok(user.get());
@@ -66,7 +70,7 @@ public class UserController {
 
     @GetMapping
     public ResponseEntity<List<User>> getAllUsers() {
-        List<User> users = userService.getAllUsers();
+        List<ResponseDTO> users = userService.getAllUsers();
 
         if (users.isEmpty()) {
             return ResponseEntity.noContent().build();
@@ -78,7 +82,7 @@ public class UserController {
 
     @GetMapping("/{id}")
     public ResponseEntity<?> getUserById(@PathVariable String Userid) {
-        Optional<User> user = userService.getUserById(Userid);
+        Optional<ResponseDTO> user = userService.getUserById(Userid);
         return user.map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
@@ -95,14 +99,17 @@ public class UserController {
     }
 
     @PutMapping("/admin/update/{id}")
-    public ResponseEntity<?> updateUserByAdmin(@PathVariable String id, @RequestBody User updatedUser) {
-        try {
-            User user = userService.updateUserByAdmin(id, updatedUser);
-            return ResponseEntity.ok(user);
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    public ResponseEntity<ResponseDTO<User>> updateUserByAdmin(@PathVariable String id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found with ID: " + id));
+
+        // Update status to ACTIVE
+        user.setStatus(User.Status.ACTIVE);
+        userRepository.save(user);
+
+        return ResponseEntity.ok(ResponseDTO.success("User status updated successfully", user));
     }
+
 
 
     @GetMapping("/pending")
@@ -111,10 +118,10 @@ public class UserController {
     }
 
 
-    // Updated soft delete implementation
+    // Soft delete implementation
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<String> deleteUser(@PathVariable String id) {
-        Optional<User> user = userService.getUserById(id);
+        Optional<ResponseDTO> user = userService.getUserById(id);
         if (user.isPresent()) {
             userService.deleteUser(id);
             return ResponseEntity.ok("User deleted successfully (soft delete).");
@@ -125,9 +132,9 @@ public class UserController {
 
 
     @PutMapping("/update-password")
-    public ResponseEntity<String> updatePassword(@RequestParam String email,
-                                                 @RequestParam String oldPassword,
-                                                 @RequestParam String newPassword) {
+    public ResponseEntity<String> updatePassword(@RequestBody String email,
+                                                 @RequestBody String oldPassword,
+                                                 @RequestBody String newPassword) {
         boolean success = userService.updatePassword(email, oldPassword, newPassword);
         if (success) {
             return ResponseEntity.ok("Password updated successfully.");

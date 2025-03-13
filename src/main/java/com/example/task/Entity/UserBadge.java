@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Getter
 @Setter
@@ -20,6 +22,11 @@ public class UserBadge {
     @Column(name = "user_id", nullable = false)
     private String userId;
 
+    @Column(nullable = true)
+    private LocalDateTime deletedAt;
+    public void softDelete() {
+        this.deletedAt = LocalDateTime.now();
+    }
 
 
     @ManyToOne

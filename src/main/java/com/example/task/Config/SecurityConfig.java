@@ -24,29 +24,38 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable()) // Disable CSRF for APIs
+                .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/users/register").permitAll()
                         .requestMatchers("/api/users/login").permitAll()
+                                .requestMatchers(HttpMethod.GET,"/api/roles/**").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/api/users/**").permitAll()
                                 .requestMatchers("/api/roles/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/api/users/**").permitAll()
-                                .requestMatchers(HttpMethod.GET, "/api/user-projects").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/api/user-projects/**").permitAll()
+                                .requestMatchers(HttpMethod.POST, "/api/user-projects").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/api/user-projects/**").permitAll()
                                 .requestMatchers(HttpMethod.DELETE, "/api/users/**").permitAll()
-                                .requestMatchers(HttpMethod.POST, "/api/projects/**").permitAll()
+                                .requestMatchers(HttpMethod.POST, "/projects/**").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/projects/**").permitAll()
+                                .requestMatchers(HttpMethod.DELETE, "/projects/**").permitAll()
+                                .requestMatchers(HttpMethod.DELETE, "/projects/user/{userId}/project/{projectId}").permitAll()
+                                .requestMatchers(HttpMethod.PUT, "/projects/**").permitAll()
+                                .requestMatchers(HttpMethod.PUT, "/api/users/admin/update/**").permitAll()
+                                .requestMatchers(HttpMethod.POST, "/user/*/certificates").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/user/*/certificates").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/user/*/certificates/*/download").permitAll()
                                 .requestMatchers(HttpMethod.POST, "/api/badges/userbadges").permitAll()
-                                .requestMatchers(HttpMethod.POST, "/api/user-projects").permitAll()
-                                .requestMatchers(HttpMethod.POST, "/api/badges").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/api/badges/userbadges/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/api/badges").permitAll()
-                                .requestMatchers(HttpMethod.GET, "/api/projects/**").permitAll()
-                                .requestMatchers(HttpMethod.DELETE, "/api/projects/**").permitAll()
-                                .requestMatchers(HttpMethod.PUT, "/api/projects/**").permitAll()
+
+
                         .requestMatchers("/api/**").authenticated()
                         .anyRequest().authenticated()
 //                )
 //                .oauth2Login(Customizer.withDefaults())
 //                .sessionManagement(session -> session
-//                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+//                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED) // Required for OAuth2
                 );
 
         return http.build();
@@ -59,15 +68,15 @@ public class SecurityConfig {
 //                        .requestMatchers("/api/users/register").permitAll()
 //                        .requestMatchers("/api/roles/**").permitAll()
 //                        .requestMatchers("/api/users/login").permitAll()
-//                        .requestMatchers("/api/**").authenticated() 
+//                        .requestMatchers("/api/**").authenticated() // Other APIs require authentication
 //                        .anyRequest().authenticated()
 //                )
-////                .oauth2Login(oauth2 -> oauth2
-////                        .defaultSuccessUrl("/api/users/home", true) // Redirect after successful login
-////                        .userInfoEndpoint(userInfo -> userInfo
-////                                .oidcUserService(new OidcUserService()) // Handles OAuth2 user details
-////                        )
-////                )
+//                .oauth2Login(oauth2 -> oauth2
+//                       .defaultSuccessUrl("/api/users/home", true) // Redirect after successful login
+//                        .userInfoEndpoint(userInfo -> userInfo
+//                                .oidcUserService(new OidcUserService()) // Handles OAuth2 user details
+//                        )
+//                )
 //                .sessionManagement(session -> session.sessionCreationPolicy(STATELESS)); // Stateless sessions for APIs
 //
 //        return http.build();

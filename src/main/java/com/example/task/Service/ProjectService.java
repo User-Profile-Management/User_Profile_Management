@@ -8,6 +8,7 @@ import com.example.task.Repository.ProjectRepository;
 import com.example.task.Repository.UserRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -37,6 +38,12 @@ public class ProjectService {
         }
     }
 
+    public ProjectDTO getProjectById(Integer projectId) {
+        return projectRepository.findById(projectId)
+                .map(projectMapper::toDTO)
+                .orElse(null); // Return null if project is not found
+    }
+
     // Edit a project
     public ProjectDTO updateProject(Integer projectId, ProjectDTO projectDTO) {
         Optional<Project> projectOptional = projectRepository.findById(projectId);
@@ -55,10 +62,20 @@ public class ProjectService {
 
     // Delete a project
     public void deleteProject(Integer projectId) {
-        if (!projectRepository.existsById(projectId)) {
+        Optional<Project> projectOptional = projectRepository.findById(projectId);
+
+        if (projectOptional.isEmpty()) {
             throw new RuntimeException("Project not found with ID: " + projectId);
         }
-        projectRepository.deleteById(projectId);
+
+        Project project = projectOptional.get();
+
+        if (project.getDeletedAt() != null) {
+            throw new RuntimeException("Project is already deleted.");
+        }
+
+        project.setDeletedAt(LocalDateTime.now()); // Mark project as deleted
+        projectRepository.save(project);
     }
 
     // Get ongoing project count
@@ -69,21 +86,14 @@ public class ProjectService {
     // Get all projects for a user
     public List<ProjectDTO> getUserProjects(String userId) {
         Optional<User> userOptional = userRepository.findById(userId);
-
-        if (userOptional.isPresent()) {
-            User user = userOptional.get();
-            return projectRepository.findByMentor(user).stream()
-                    .map(p -> new ProjectDTO(
-                            p.getId(),
-                            p.getProjectName(),
-                            p.getDescription(),
-                            p.getStatus(),
-                            p.getMentor() != null ? String.valueOf(p.getMentor().getUserId()) : null
-                    ))
-                    .collect(Collectors.toList());
-        } else {
+        if (userOptional.isEmpty()) {
             throw new RuntimeException("User not found with userId: " + userId);
         }
+
+        User user = userOptional.get();
+        return projectRepository.findByMentorAndDeletedAtIsNull(user).stream()
+                .map(projectMapper::toDTO)
+                .collect(Collectors.toList());
     }
 
     // Add a project for a user
@@ -120,22 +130,29 @@ public class ProjectService {
     // Delete a project assigned to a user
     public void deleteUserProject(String userId, Integer projectId) {
         Optional<User> userOptional = userRepository.findById(userId);
-        if (!userOptional.isPresent()) {
+        if (userOptional.isEmpty()) {
             throw new RuntimeException("User not found with ID: " + userId);
         }
 
         Optional<Project> projectOptional = projectRepository.findByIdAndMentor(projectId, userOptional.get());
-        if (!projectOptional.isPresent()) {
+        if (projectOptional.isEmpty()) {
             throw new RuntimeException("Project not found for user ID: " + userId);
         }
 
-        projectRepository.delete(projectOptional.get());
+        Project project = projectOptional.get();
+
+        if (project.getDeletedAt() != null) {
+            throw new RuntimeException("Project is already deleted.");
+        }
+
+        project.setDeletedAt(LocalDateTime.now()); // Mark as deleted
+        projectRepository.save(project);
     }
 
 
     // Get all projects
     public List<ProjectDTO> getAllProjects() {
-        List<Project> projects = projectRepository.findAll();
+        List<Project> projects = projectRepository.findByDeletedAtIsNull();
         return projects.stream().map(projectMapper::toDTO).collect(Collectors.toList());
     }
 
@@ -161,7 +178,7 @@ public class ProjectService {
 
     // Get total count of all projects
     public Integer getTotalProjectCount() {
-        return (int) projectRepository.count();
+        return (int) projectRepository.findByDeletedAtIsNull().size();
     }
 
     // Get count of completed projects

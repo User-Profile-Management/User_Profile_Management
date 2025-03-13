@@ -10,5 +10,7 @@ import java.util.List;
 public interface UserBadgeRepository extends JpaRepository<UserBadge, Integer> {
     List<UserBadge> findByUserId(String userId);
 
+    List<UserBadge> findByUserIdAndDeletedAtIsNull(String userId); // Only fetch active badges
+
 
 }

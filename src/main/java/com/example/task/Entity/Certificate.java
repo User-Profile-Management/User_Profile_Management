@@ -4,11 +4,11 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "certificates")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "certificates")
 public class Certificate {
 
     @Id
@@ -22,7 +22,11 @@ public class Certificate {
     @Column(name = "issued_by", nullable = false)
     private String issuedBy;
 
-    @Lob
-    @Column(name = "certificate_document")
-    private byte[] certificateDocument;
+    @Lob  // Marks the field as Large Object (BLOB)
+    @Column(name = "certificate_pdf")
+    private byte[] certificatePdf;  // Binary data for the PDF file
+
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 }

@@ -5,6 +5,8 @@ import lombok.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
+import java.time.LocalDateTime;
+
 
 @Entity
 @Getter
@@ -26,12 +28,19 @@ public class UserProject {
     
     @ManyToOne
     @JoinColumn(name = "user_id", referencedColumnName = "user_id", insertable = false, updatable = false)
-    @OnDelete(action = OnDeleteAction.CASCADE)
+
     private User user;
 
 
     @ManyToOne
     @JoinColumn(name = "project_id", referencedColumnName = "project_id", insertable = false, updatable = false)
-    @OnDelete(action = OnDeleteAction.CASCADE)
+
     private Project project;
+
+    @Column(nullable = true)
+    private LocalDateTime deletedAt;
+
+    public void softDelete() {
+        this.deletedAt = LocalDateTime.now();
+    }
 }

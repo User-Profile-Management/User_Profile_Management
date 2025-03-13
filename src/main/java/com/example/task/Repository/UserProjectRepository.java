@@ -17,4 +17,8 @@ public interface UserProjectRepository extends JpaRepository<UserProject, Intege
     // Fetch all users assigned to a specific project
     List<UserProject> findByProject(Project project);
     Optional<UserProject> findByUserAndProject(User user, Project project);
+
+    Optional<UserProject> findByUserIdAndProjectId(String userId, int Id);
+
+    List<UserProject> findByUserId(String userId);
 }
