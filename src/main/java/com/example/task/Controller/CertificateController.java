@@ -18,7 +18,6 @@ import java.util.List;
 public class CertificateController {
 
     private final CertificateService certificateService;
-
     @GetMapping
     public ResponseEntity<List<CertificateDTO>> getCertificates(@PathVariable String userId) {
         List<CertificateDTO> certificates = certificateService.getCertificatesByUserId(userId);
@@ -48,6 +47,16 @@ public class CertificateController {
             return ResponseEntity.status(HttpStatus.CREATED).body(createdCertificate);
         } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
+    @DeleteMapping("/{certificateId}")
+    public ResponseEntity<String> deleteCertificate(@PathVariable Integer certificateId) {
+        try {
+            certificateService.deleteCertificateById(certificateId);
+            return ResponseEntity.ok("Certificate deleted successfully.");
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
 }

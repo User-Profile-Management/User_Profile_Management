@@ -38,6 +38,7 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.POST, "/user/*/certificates").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/user/*/certificates").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/user/*/certificates/*/download").permitAll()
+                                .requestMatchers(HttpMethod.DELETE, "/user/*/certificates/*").permitAll()
 
                         .requestMatchers("/api/**").authenticated()
                         .anyRequest().authenticated()
@@ -70,7 +71,6 @@ public class SecurityConfig {
 //
 //        return http.build();
 //    }
-
 
     @Bean
     public PasswordEncoder passwordEncoder() {

@@ -77,6 +77,12 @@ public class ProjectService {
         return projectRepository.countByStatus("ONGOING");
     }
 
+    public ProjectDTO getProjectById(Integer projectId) {
+        return projectRepository.findById(projectId)
+                .map(projectMapper::toDTO)
+                .orElseThrow(null);
+    }
+
     // Get all projects for a user
     public List<ProjectDTO> getUserProjects(String userId) {
         Optional<User> userOptional = userRepository.findById(userId);
@@ -164,7 +170,7 @@ public class ProjectService {
         return projectMapper.toDTO(project);
     }
 
-    // Get projects based on user role (returns all projects for now)
+    // Get projects based on user role
     public List<ProjectDTO> getProjectsByUserRole() {
         List<Project> projects = projectRepository.findAll();
         return projects.stream().map(projectMapper::toDTO).collect(Collectors.toList());

@@ -46,4 +46,12 @@ public class CertificateService {
         Certificate saved = certificateRepository.save(certificate);
         return new CertificateDTO(saved.getCertificateId(), saved.getCertificateName(), saved.getIssuedBy());
     }
+
+    // DELETE Certificate by ID
+    public void deleteCertificateById(Integer certificateId) {
+        if (!certificateRepository.existsById(certificateId)) {
+            throw new RuntimeException("Certificate not found with ID: " + certificateId);
+        }
+        certificateRepository.deleteById(certificateId);
+    }
 }

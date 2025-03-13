@@ -23,6 +23,13 @@ public class ProjectController {
         return ResponseEntity.ok(projectService.getCompletedProjectCount(userId));
     }
 
+    // Get a specific project by ID
+    @GetMapping("/{projectId}")
+    public ResponseEntity<ProjectDTO> getProjectById(@PathVariable Integer projectId) {
+        ProjectDTO project = projectService.getProjectById(projectId);
+        return project != null ? ResponseEntity.ok(project) : ResponseEntity.notFound().build();
+    }
+
     // Edit project
     @PutMapping("/{projectId}")
     public ResponseEntity<ProjectDTO> updateProject(
