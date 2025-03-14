@@ -10,4 +10,5 @@ public class UserProjectDTO {
     private int id;
     private String userId;
     private int projectId;
+    private String status;
 }

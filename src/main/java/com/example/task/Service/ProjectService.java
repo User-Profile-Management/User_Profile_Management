@@ -5,6 +5,7 @@ import com.example.task.Entity.Project;
 import com.example.task.Entity.User;
 import com.example.task.Mapper.ProjectMapper;
 import com.example.task.Repository.ProjectRepository;
+import com.example.task.Repository.UserProjectRepository;
 import com.example.task.Repository.UserRepository;
 import org.springframework.stereotype.Service;
 
@@ -19,24 +20,26 @@ public class ProjectService {
     private final ProjectRepository projectRepository;
     private final UserRepository userRepository;
     private final ProjectMapper projectMapper;
+    private final UserProjectRepository userProjectRepository;
 
-    public ProjectService(ProjectRepository projectRepository, UserRepository userRepository, ProjectMapper projectMapper) {
+    public ProjectService(ProjectRepository projectRepository, UserRepository userRepository, ProjectMapper projectMapper,UserProjectRepository userProjectRepository) {
         this.projectRepository = projectRepository;
         this.userRepository = userRepository;
         this.projectMapper = projectMapper;
+        this.userProjectRepository = userProjectRepository;
     }
 
-    // Get count of completed projects for a user
-    public Integer getCompletedProjectCount(String userId) {
-        Optional<User> userOptional = userRepository.findById(userId);
-
-        if (userOptional.isPresent()) {
-            User user = userOptional.get();
-            return projectRepository.countByMentorAndStatus(user, "COMPLETED");
-        } else {
-            throw new RuntimeException("User not found with userId: " + userId);
-        }
-    }
+//    // Get count of completed projects for a user
+//    public Integer getCompletedProjectCount(String userId) {
+//        Optional<User> userOptional = userRepository.findById(userId);
+//
+//        if (userOptional.isPresent()) {
+//            User user = userOptional.get();
+//            return projectRepository.countByMentorAndStatus(user, "COMPLETED");
+//        } else {
+//            throw new RuntimeException("User not found with userId: " + userId);
+//        }
+//    }
 
     public ProjectDTO getProjectById(Integer projectId) {
         return projectRepository.findById(projectId)
@@ -54,7 +57,7 @@ public class ProjectService {
         Project project = projectOptional.get();
         project.setProjectName(projectDTO.getProjectName());
         project.setDescription(projectDTO.getDescription());
-        project.setStatus(projectDTO.getStatus());
+
 
         projectRepository.save(project);
         return projectMapper.toDTO(project);
@@ -78,10 +81,10 @@ public class ProjectService {
         projectRepository.save(project);
     }
 
-    // Get ongoing project count
-    public Integer getOngoingProjectCount() {
-        return projectRepository.countByStatus("ONGOING");
-    }
+//    // Get ongoing project count
+//    public Integer getOngoingProjectCount() {
+//        return userProjectRepository.countByStatus("ONGOING");
+//    }
 
     // Get all projects for a user
     public List<ProjectDTO> getUserProjects(String userId) {
@@ -122,7 +125,7 @@ public class ProjectService {
         }
 
         Project project = projectOptional.get();
-        project.setStatus(projectDTO.getStatus());
+
         projectRepository.save(project);
         return projectMapper.toDTO(project);
     }
@@ -181,8 +184,8 @@ public class ProjectService {
         return (int) projectRepository.findByDeletedAtIsNull().size();
     }
 
-    // Get count of completed projects
-    public Integer getCompletedProjectsCount() {
-        return projectRepository.countByStatus("COMPLETED");
-    }
+//    // Get count of completed projects
+//    public Integer getCompletedProjectsCount() {
+//        return projectRepository.countByStatus("COMPLETED");
+//    }
 }

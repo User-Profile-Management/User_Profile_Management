@@ -14,7 +14,7 @@ public class ProjectMapper {
         dto.setId(project.getId());
         dto.setProjectName(project.getProjectName());
         dto.setDescription(project.getDescription());
-        dto.setStatus(project.getStatus());
+
         dto.setMentorId(project.getMentor() != null ? project.getMentor().getUserId() : null);
         return dto;
     }
@@ -24,7 +24,7 @@ public class ProjectMapper {
         project.setId(dto.getId());
         project.setProjectName(dto.getProjectName());
         project.setDescription(dto.getDescription());
-        project.setStatus(dto.getStatus());
+
         project.setMentor(mentor);
         return project;
     }
@@ -33,7 +33,7 @@ public class ProjectMapper {
         Project project = new Project();
         project.setProjectName(projectDTO.getProjectName());
         project.setDescription(projectDTO.getDescription());
-        project.setStatus(projectDTO.getStatus());
+
         return project;
     }
 }

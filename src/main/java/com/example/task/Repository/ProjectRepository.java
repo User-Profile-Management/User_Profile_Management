@@ -16,16 +16,13 @@ public interface ProjectRepository extends JpaRepository<Project, Integer> {
     // Find a project by its ID and Mentor (for user-specific project operations)
     Optional<Project> findByIdAndMentor(Integer projectId, User mentor);
 
-    // Count the number of projects completed by a specific mentor
-    Integer countByMentorAndStatus(User mentor, String status);
+//    // Count the number of projects completed by a specific mentor
+//    Integer countByMentorAndStatus(User mentor, String status);
 
-    // Count projects based on their status
-    Integer countByStatus(String status);
 
-    @Query("SELECT COUNT(up) FROM UserProject up " +
-            "JOIN up.project p " +
-            "WHERE up.user.id = :userId AND p.status = 'COMPLETED'")
-    int countByUserIdAndStatus(@Param("userId") String userId);
+
+
+
 
     // Fetch only active projects
     List<Project> findByDeletedAtIsNull();
@@ -33,4 +30,5 @@ public interface ProjectRepository extends JpaRepository<Project, Integer> {
     // Fetch only active projects for a mentor
     List<Project> findByMentorAndDeletedAtIsNull(User mentor);
 
+//    Integer countByStatus(String completed);
 }

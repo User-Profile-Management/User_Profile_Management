@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/projects")
+@RequestMapping("/api/projects")
 public class ProjectController {
 
     private final ProjectService projectService;
@@ -17,13 +17,13 @@ public class ProjectController {
         this.projectService = projectService;
     }
 
-    // Get count of completed projects for a user
-    @GetMapping("/user/{userId}/projects/completed_count")
-    public ResponseEntity<Integer> getCompletedProjectCount(@PathVariable String userId) {
-        return ResponseEntity.ok(projectService.getCompletedProjectCount(userId));
-    }
+//    // Get count of completed projects for a user
+//    @GetMapping("/user/{userId}/projects/completed_count")
+//    public ResponseEntity<Integer> getCompletedProjectCount(@PathVariable String userId) {
+//        return ResponseEntity.ok(projectService.getCompletedProjectCount(userId));
+//    }
 
-    // Edit project
+    // Edit project for everyone
     @PutMapping("/{projectId}")
     public ResponseEntity<ProjectDTO> updateProject(
             @PathVariable Integer projectId,
@@ -31,24 +31,24 @@ public class ProjectController {
         return ResponseEntity.ok(projectService.updateProject(projectId, projectDTO));
     }
 
-    // Delete a project
+
     @DeleteMapping("/{projectId}")
     public ResponseEntity<String> deleteProject(@PathVariable Integer projectId) {
         projectService.deleteProject(projectId);
         return ResponseEntity.ok("Project deleted successfully.");
     }
-    // Get a specific project by ID
+
     @GetMapping("/{projectId}")
     public ResponseEntity<ProjectDTO> getProjectById(@PathVariable Integer projectId) {
         ProjectDTO project = projectService.getProjectById(projectId);
         return project != null ? ResponseEntity.ok(project) : ResponseEntity.notFound().build();
     }
 
-    // Get ongoing project count
-    @GetMapping("/user/projects/ongoing_count")
-    public ResponseEntity<Integer> getOngoingProjectCount() {
-        return ResponseEntity.ok(projectService.getOngoingProjectCount());
-    }
+//    // Get ongoing project count
+//    @GetMapping("/user/projects/ongoing_count")
+//    public ResponseEntity<Integer> getOngoingProjectCount() {
+//        return ResponseEntity.ok(projectService.getOngoingProjectCount());
+//    }
 
     // Get all projects for a user
     @GetMapping("/user/{userId}/projects")
@@ -82,13 +82,13 @@ public class ProjectController {
         return ResponseEntity.ok("Project deleted successfully for user.");
     }
 
-    // Get all projects
+
     @GetMapping
     public ResponseEntity<List<ProjectDTO>> getAllProjects() {
         return ResponseEntity.ok(projectService.getAllProjects());
     }
 
-    // Add a new project
+
     @PostMapping
     public ResponseEntity<ProjectDTO> createProject(@RequestBody ProjectDTO projectDTO) {
         return ResponseEntity.ok(projectService.createProject(projectDTO));
@@ -106,9 +106,9 @@ public class ProjectController {
         return ResponseEntity.ok(projectService.getTotalProjectCount());
     }
 
-    // Get count of completed projects
-    @GetMapping("/user/projects/completed_count")
-    public ResponseEntity<Integer> getCompletedProjectsCount() {
-        return ResponseEntity.ok(projectService.getCompletedProjectsCount());
-    }
+//    // Get count of completed projects
+//    @GetMapping("/user/projects/completed_count")
+//    public ResponseEntity<Integer> getCompletedProjectsCount() {
+//        return ResponseEntity.ok(projectService.getCompletedProjectsCount());
+//    }
 }

@@ -10,7 +10,8 @@ public class UserProjectMapper {
         return new UserProjectDTO(
                 userProject.getId(),  // Ensure ID is an int
                 userProject.getUser().getUserId(),  // Ensure userId is String
-                userProject.getProject().getId() // Ensure projectId is int
+                userProject.getProject().getId(), // Ensure projectId is int
+                userProject.getStatus()
         );
     }
 
@@ -22,6 +23,7 @@ public class UserProjectMapper {
 
         userProject.setUser(user);
         userProject.setProject(project);
+        userProject.setStatus(userProjectDTO.getStatus());
 
         return userProject;
     }

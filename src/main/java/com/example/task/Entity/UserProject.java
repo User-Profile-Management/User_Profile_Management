@@ -25,7 +25,8 @@ public class UserProject {
     @Column(name = "project_id", nullable = false)
     private int projectId;
 
-    
+    @Column(name = "status")
+    private String status;
     @ManyToOne
     @JoinColumn(name = "user_id", referencedColumnName = "user_id", insertable = false, updatable = false)
 
@@ -40,7 +41,13 @@ public class UserProject {
     @Column(nullable = true)
     private LocalDateTime deletedAt;
 
+
     public void softDelete() {
         this.deletedAt = LocalDateTime.now();
+    }
+
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }

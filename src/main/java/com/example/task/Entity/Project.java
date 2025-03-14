@@ -29,8 +29,7 @@ public class Project {
     @JoinColumn(name = "mentor_id", nullable = false)
     private User mentor;
 
-    @Column(name = "status")
-    private String status;
+
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
