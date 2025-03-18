@@ -17,7 +17,8 @@ public class DataInitializer { private final RoleRepository roleRepository;
     @PostConstruct
     public void initializeRoles() {
         createRoleIfNotExists("STUDENT");
-        createRoleIfNotExists("EMPLOYEE");
+        createRoleIfNotExists("MENTOR");
+        createRoleIfNotExists("ADMIN");
     }
 
     private void createRoleIfNotExists(String roleName) {

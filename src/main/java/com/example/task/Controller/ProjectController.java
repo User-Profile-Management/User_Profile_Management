@@ -3,12 +3,13 @@ package com.example.task.Controller;
 import com.example.task.DTO.ProjectDTO;
 import com.example.task.Service.ProjectService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/projects")
+@RequestMapping("/api/projects")
 public class ProjectController {
 
     private final ProjectService projectService;
@@ -31,6 +32,7 @@ public class ProjectController {
     }
 
     // Edit project
+    @PreAuthorize("hasAnyAuthority('MENTOR', 'ADMIN')")
     @PutMapping("/{projectId}")
     public ResponseEntity<ProjectDTO> updateProject(
             @PathVariable Integer projectId,
@@ -39,6 +41,7 @@ public class ProjectController {
     }
 
     // Delete a project
+    @PreAuthorize("hasAuthority('ADMIN')")
     @DeleteMapping("/{projectId}")
     public ResponseEntity<String> deleteProject(@PathVariable Integer projectId) {
         projectService.deleteProject(projectId);
@@ -84,12 +87,14 @@ public class ProjectController {
     }
 
     // Get all projects
+    @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping
     public ResponseEntity<List<ProjectDTO>> getAllProjects() {
         return ResponseEntity.ok(projectService.getAllProjects());
     }
 
     // Add a new project
+    @PreAuthorize("hasAuthority('ADMIN')")
     @PostMapping
     public ResponseEntity<ProjectDTO> createProject(@RequestBody ProjectDTO projectDTO) {
         return ResponseEntity.ok(projectService.createProject(projectDTO));

@@ -37,6 +37,12 @@ public class CertificateService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
+        // Check if the certificate already exists for the user
+        boolean exists = certificateRepository.existsByUserAndCertificateName(user, certificateName);
+        if (exists) {
+            throw new RuntimeException("Certificate already exists");
+        }
+
         Certificate certificate = new Certificate();
         certificate.setCertificateName(certificateName);
         certificate.setIssuedBy(issuedBy);
