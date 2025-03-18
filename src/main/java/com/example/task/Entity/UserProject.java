@@ -26,16 +26,17 @@ public class UserProject {
     private int projectId;
 
     @Column(name = "status")
+
     private String status;
     @ManyToOne
     @JoinColumn(name = "user_id", referencedColumnName = "user_id", insertable = false, updatable = false)
-
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private User user;
 
 
     @ManyToOne
     @JoinColumn(name = "project_id", referencedColumnName = "project_id", insertable = false, updatable = false)
-
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Project project;
 
     @Column(nullable = true)

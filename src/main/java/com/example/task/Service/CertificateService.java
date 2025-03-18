@@ -37,6 +37,12 @@ public class CertificateService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
+        // Check if the certificate already exists for the user
+        boolean exists = certificateRepository.existsByUserAndCertificateName(user, certificateName);
+        if (exists) {
+            throw new RuntimeException("Certificate already exists");
+        }
+
         Certificate certificate = new Certificate();
         certificate.setCertificateName(certificateName);
         certificate.setIssuedBy(issuedBy);
@@ -45,5 +51,13 @@ public class CertificateService {
 
         Certificate saved = certificateRepository.save(certificate);
         return new CertificateDTO(saved.getCertificateId(), saved.getCertificateName(), saved.getIssuedBy());
+    }
+
+    // DELETE Certificate by ID
+    public void deleteCertificateById(Integer certificateId) {
+        if (!certificateRepository.existsById(certificateId)) {
+            throw new RuntimeException("Certificate not found with ID: " + certificateId);
+        }
+        certificateRepository.deleteById(certificateId);
     }
 }

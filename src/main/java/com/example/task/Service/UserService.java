@@ -5,6 +5,9 @@ import com.example.task.Entity.User;
 import com.example.task.Repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Primary;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -17,6 +20,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@Primary
 public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
     private final RoleService roleService;
@@ -29,17 +33,26 @@ public class UserService implements UserDetailsService {
         this.passwordEncoder = passwordEncoder;
     }
 
-
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Optional<User> userOptional = userRepository.findByEmail(username);
+        Optional<User> userOptional = userRepository.findByEmailAndDeletedAtIsNull(username);
         if (userOptional.isEmpty()) {
-            throw new UsernameNotFoundException("User not found with email: " + username);
+            throw new UsernameNotFoundException("User not found or has been deleted: " + username);
         }
         User user = userOptional.get();
 
-        return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(), new ArrayList<>());
+        List<GrantedAuthority> authorities = new ArrayList<>();
+        if (user.getRole() != null) {
+            authorities.add(new SimpleGrantedAuthority(user.getRole().getRoleName()));
+        }
+
+        return new org.springframework.security.core.userdetails.User(
+                user.getEmail(),
+                user.getPassword(),
+                authorities
+        );
     }
+
 
     @Transactional
     public User registerUser(User user, String roleName) {
@@ -51,7 +64,9 @@ public class UserService implements UserDetailsService {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         return userRepository.save(user);
     }
-
+    public User saveUser(User user) {
+        return userRepository.save(user);
+    }
 
     public String generateUserId(Role role) {
         String prefix = "USR"; // Default prefix
@@ -65,7 +80,6 @@ public class UserService implements UserDetailsService {
 
         Integer count = userRepository.countByRole(role) + 1;
 
-
         return String.format("%s%03d", prefix, count);
     }
 
@@ -76,18 +90,20 @@ public class UserService implements UserDetailsService {
     }
 
     public Optional<User> loginUser(String email, String rawPassword) {
-        Optional<User> user = userRepository.findByEmail(email);
+        Optional<User> user = userRepository.findByEmailAndDeletedAtIsNull(email);
 
         return user.filter(u ->
                 passwordEncoder.matches(rawPassword, u.getPassword()) &&
-                        u.getStatus() == User.Status.ACTIVE // Check if user is approved
+                        u.getStatus() == User.Status.ACTIVE // Ensure user is approved
         );
     }
 
+
     // Get Pending Approval Users
     public List<User> getPendingApprovalUsers() {
-        return userRepository.findByStatus(User.Status.INACTIVE);
+        return userRepository.findByStatusAndDeletedAtIsNull(User.Status.INACTIVE);
     }
+
 
     // Get User by Email
     public Optional<User> getUserByEmail(String email) {
@@ -104,19 +120,16 @@ public class UserService implements UserDetailsService {
 
     public Long getActiveStudentCount() {
         return userRepository.countByRoleAndStatus("STUDENT", User.Status.ACTIVE);
-
     }
-
-
 
     public Long getActiveMentorCount() {
         return userRepository.countByRoleAndStatus("MENTOR", User.Status.ACTIVE);
     }
 
-
-    public Optional<User> getUserById(String userId) {
-        return userRepository.findByUserIdAndDeletedAtIsNull(userId);
+    public Optional<User> getUserById(String id) {
+        return userRepository.findById(id);
     }
+
 
 
     public User updateUserProfile(String userId, User updatedUser) {
@@ -134,12 +147,17 @@ public class UserService implements UserDetailsService {
                     if (updatedUser.getProfilePicture() != null) {
                         existingUser.setProfilePicture(updatedUser.getProfilePicture());
                     }
+                    if (updatedUser.getDateOfBirth() != null) {
+                        existingUser.setDateOfBirth(updatedUser.getDateOfBirth());
+                    }
                     if (updatedUser.getStatus() != null) {
                         existingUser.setStatus(updatedUser.getStatus());
                     }
+
+                    existingUser.setEmergencyContact(updatedUser.getEmergencyContact());
                     existingUser.setUpdatedAt(LocalDateTime.now());
                     return userRepository.save(existingUser);
-                }).orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+                }).orElseThrow(() -> new RuntimeException("User not found or has been deleted: " + userId));
     }
 
 
@@ -152,11 +170,14 @@ public class UserService implements UserDetailsService {
                     existingUser.setProfilePicture(updatedUser.getProfilePicture());
                     existingUser.setStatus(updatedUser.getStatus());
                     existingUser.setRole(updatedUser.getRole());
+
+                    // Add emergency contact update
+                    existingUser.setEmergencyContact(updatedUser.getEmergencyContact());
+
                     existingUser.setUpdatedAt(LocalDateTime.now());
                     return userRepository.save(existingUser);
                 }).orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
     }
-
 
     @Transactional
     public void deleteUser(String userId) {
@@ -166,9 +187,8 @@ public class UserService implements UserDetailsService {
         });
     }
 
-
     public boolean updatePassword(String email, String oldPassword, String newPassword) {
-        Optional<User> userOptional = userRepository.findByEmail(email);
+        Optional<User> userOptional = userRepository.findByEmailAndDeletedAtIsNull(email);
         if (userOptional.isPresent()) {
             User user = userOptional.get();
             if (passwordEncoder.matches(oldPassword, user.getPassword())) {
@@ -179,6 +199,5 @@ public class UserService implements UserDetailsService {
         }
         return false;
     }
-
 
 }

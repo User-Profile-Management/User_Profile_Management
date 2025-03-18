@@ -16,24 +16,38 @@ public interface UserRepository extends JpaRepository<User, String> {
     Integer countByRole(Role role);
 
 
+    // Override findById to exclude deleted users
+    @Query("SELECT u FROM User u WHERE u.userId = :userId AND u.deletedAt IS NULL")
+    Optional<User> findById(String userId);
 
+    // Fetch user by email (for login) only if not deleted
+    @Query("SELECT u FROM User u WHERE u.email = :email AND u.deletedAt IS NULL")
+    Optional<User> findByEmail(String email);
 
 
     @Query("SELECT u FROM User u WHERE UPPER(u.role.roleName) = UPPER(:roleName) AND u.status = :status")
     List<User> findByRoleAndStatus(@Param("roleName") String roleName, @Param("status") User.Status status);
 
-    @Query("SELECT u FROM User u JOIN FETCH u.role WHERE u.email = :email")
-    Optional<User> findByEmail(@Param("email") String email);
+//    @Query("SELECT u FROM User u JOIN FETCH u.role WHERE u.email = :email")
+//    Optional<User> findByEmail(@Param("email") String email);
 
 
     List<User> findByStatus(User.Status status);
 
-    Optional<User> findByUserIdAndDeletedAtIsNull(String userId);
 
-    List<User> findByStatusAndDeletedAtIsNull(User.Status status);
 
     @Query("SELECT COUNT(u) FROM User u WHERE UPPER(u.role.roleName) = UPPER(:roleName) AND u.status = :status")
     Long countByRoleAndStatus(@Param("roleName") String roleName, @Param("status") User.Status status);
 
     List<User> findAllByDeletedAtIsNull();
+
+    @Query("SELECT u FROM User u WHERE u.email = :email AND u.deletedAt IS NULL")
+    Optional<User> findByEmailAndDeletedAtIsNull(String email);
+
+    @Query("SELECT u FROM User u WHERE u.userId = :userId AND u.deletedAt IS NULL")
+    Optional<User> findByUserIdAndDeletedAtIsNull(String userId);
+
+    @Query("SELECT u FROM User u WHERE u.status = :status AND u.deletedAt IS NULL")
+    List<User> findByStatusAndDeletedAtIsNull(User.Status status);
+
 }

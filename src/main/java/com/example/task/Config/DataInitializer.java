@@ -38,6 +38,7 @@ public class DataInitializer {
             roleRepository.save(role);
         }
     }
+    @PostConstruct
     @Transactional
     private void initializeBadges() throws IOException {
         List<Badge> defaultBadges = List.of(

@@ -1,57 +1,111 @@
 package com.example.task.Config;
 
+import com.example.task.Security.JwtAuthFilter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
+import java.util.Arrays;
 
 @Configuration
+@EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfig {
+
+    private final JwtAuthFilter jwtAuthFilter;
+    private final UserDetailsService userDetailsService;
+
+    @Autowired
+    public SecurityConfig(JwtAuthFilter jwtAuthFilter,@Lazy UserDetailsService userDetailsService) {
+        this.jwtAuthFilter = jwtAuthFilter;
+        this.userDetailsService = userDetailsService;
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(AbstractHttpConfigurer::disable)
+                .csrf(csrf -> csrf.disable())
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
+                        // Public endpoints
+                        .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/users/register").permitAll()
-                        .requestMatchers("/api/auth/login").permitAll()
-                        .requestMatchers(HttpMethod.GET,"/api/roles/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/users/**").permitAll()
-                        .requestMatchers("/api/roles/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/users/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/user-projects/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/user-projects").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/user-projects/**").permitAll()
-                        .requestMatchers(HttpMethod.DELETE, "/api/users/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/projects/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/projects/**").permitAll()
-                        .requestMatchers(HttpMethod.DELETE, "/projects/**").permitAll()
-                        .requestMatchers(HttpMethod.DELETE, "/projects/user/{userId}/project/{projectId}").permitAll()
-                        .requestMatchers(HttpMethod.PUT, "/projects/**").permitAll()
-                        .requestMatchers(HttpMethod.PUT, "/api/users/admin/update/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/user/*/certificates").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/user/*/certificates").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/user/*/certificates/*/download").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/badges/userbadges").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/badges/userbadges/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/badges").permitAll()
-                        .requestMatchers(HttpMethod.PUT, "/api/user-projects/users/**/projects/**").hasRole("MENTOR")
 
+                        // Secured endpoints with role-based access
+                        .requestMatchers("/api/admin/**").hasAuthority("ADMIN")
+                        .requestMatchers("/api/users/profile").authenticated()
+                        .requestMatchers("/api/users/update-password").authenticated()
 
-                        .requestMatchers("/api/**").authenticated()
+                        // Admin-only endpoints
+                        .requestMatchers("/api/users/pending").hasAuthority("ADMIN")
+                        .requestMatchers("/api/users/mentors").hasAuthority("ADMIN")
+                        .requestMatchers("/api/users/mentors/count").hasAuthority("ADMIN")
+                        .requestMatchers("/api/users/students/count").hasAuthority("ADMIN")
+                        .requestMatchers("/api/users/delete/*").hasAuthority("ADMIN")
+                        .requestMatchers("/api/users/*/status").hasAuthority("ADMIN")
+
+                        // Students endpoint for mentors and admins
+                        .requestMatchers("/api/users/students").hasAnyAuthority("MENTOR", "ADMIN")
+
+                        // Project endpoints
+                        .requestMatchers(HttpMethod.POST, "/api/projects").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/projects").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/projects/*").permitAll()
+                        .requestMatchers(HttpMethod.PUT, "/api/projects/*").hasAnyAuthority("MENTOR", "ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/projects/*").hasAuthority("ADMIN")
+
+                        // Certificate endpoints
+                        .requestMatchers(HttpMethod.POST, "/api/user/*/certificates").hasAuthority("STUDENT")
+                        .requestMatchers(HttpMethod.GET, "/api/user/*/certificates").permitAll()
+                        .requestMatchers(HttpMethod.DELETE, "/api/user/*/certificates/*").hasAuthority("STUDENT")
+                        .requestMatchers(HttpMethod.GET, "/api/user/*/certificates/*/download").permitAll()
+
+                        //userproject
+                        .requestMatchers(HttpMethod.PUT, "/api/user-projects/users/{userId}/projects/*").hasAuthority("MENTOR")
+                        .requestMatchers(HttpMethod.POST, "/api/user-projects").hasAuthority("MENTOR")
+                        .requestMatchers(HttpMethod.GET, "/api/user-projects/user/*").hasAnyAuthority("ADMIN", "MENTOR")
+//                        .requestMatchers(HttpMethod.GET, "/api/user-projects/user").hasAuthority("STUDENT")
+
+                        //userbadges
+
+                                .requestMatchers(HttpMethod.POST, "/api/badges/userbadges").hasAuthority("MENTOR")
+
+                        //All other requests need authentication
                         .anyRequest().authenticated()
                 )
-                .sessionManagement(session -> session.sessionCreationPolicy(STATELESS)); // Stateless sessions for APIs
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
+                .authenticationProvider(authenticationProvider())
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
+    }
+
+    @Bean
+    public AuthenticationProvider authenticationProvider() {
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+        authProvider.setUserDetailsService(userDetailsService);
+        authProvider.setPasswordEncoder(passwordEncoder());
+        return authProvider;
     }
 
     @Bean
@@ -60,7 +114,21 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
-        return authenticationConfiguration.getAuthenticationManager();
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(Arrays.asList("*"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With"));
+        configuration.setExposedHeaders(Arrays.asList("Authorization"));
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+
+        return source;
     }
 }

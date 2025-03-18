@@ -66,27 +66,43 @@ public class UserProjectService {
         return userProjectRepository.save(userProject);
     }
 
+    
+
+    public List<Project> getAssignedProjects(String studentId) {
+        // Fetch only non-deleted projects assigned to the student
+        return userProjectRepository.findProjectsByStudentId(studentId);
+    }
+    public void softDeleteUserProject(int userProjectId) {
+        Optional<UserProject> userProject = userProjectRepository.findById(userProjectId);
+        if (userProject.isPresent()) {
+            userProject.get().setDeletedAt(LocalDateTime.now());
+            userProjectRepository.save(userProject.get());
+        } else {
+            throw new RuntimeException("UserProject not found");
+        }
+    }
+
     @Transactional
     public void updateUserProjectStatus(String userId, Integer projectId, String status) {
+        System.out.println("Updating project status for user: " + userId + ", project: " + projectId);
+
         UserProject userProject = userProjectRepository.findByUserIdAndProjectId(userId, projectId)
                 .orElseThrow(() -> new RuntimeException("User is not assigned to this project"));
+
+        System.out.println("Found UserProject: " + userProject.getId() + " with current status: " + userProject.getStatus());
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // ✅ FIXED: Ensure `getRole()` returns a String or Enum
-        if (!"MENTOR".equals(user.getRole().toString())) {
-            throw new RuntimeException("Only mentors can update project status");
-        }
+        // 🔍 Debugging: Print user role before checking
+        System.out.println("User role found: " + user.getRole().getRoleName());
 
+
+
+        System.out.println("Changing status to: " + status);
         userProject.setStatus(status);
         userProjectRepository.save(userProject);
+        System.out.println("Updated status: " + userProject.getStatus());
     }
 
-    @Transactional
-    public void softDeleteUserProjects(String userId) {
-        List<UserProject> userProjects = userProjectRepository.findByUserId(userId);
-        userProjects.forEach(userProject -> userProject.setDeletedAt(LocalDateTime.now()));
-        userProjectRepository.saveAll(userProjects);
-    }
 }

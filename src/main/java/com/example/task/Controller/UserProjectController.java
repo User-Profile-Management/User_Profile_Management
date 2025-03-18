@@ -1,10 +1,15 @@
 package com.example.task.Controller;
 
+import com.example.task.DTO.ApiResponse;
+import com.example.task.Entity.Project;
 import com.example.task.Entity.UserProject;
 import com.example.task.Service.UserProjectService;
+import org.springframework.security.core.Authentication;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
@@ -22,26 +27,30 @@ public class UserProjectController {
     }
 
     @GetMapping // For reference only
-    public List<UserProject> getAllUserProjects() {
-        return userProjectService.getAllUserProjects();
+    public ResponseEntity<ApiResponse<List<UserProject>>> getAllUserProjects() {
+        List<UserProject> userProjects = userProjectService.getAllUserProjects();
+        return ResponseEntity.ok(new ApiResponse(200, "Fetched all user projects", userProjects,null));
     }
 
-    @GetMapping("/user/{userId}") // Needed
-    public List<UserProject> getUserProjectsByUserId(@PathVariable String userId) {
-        return userProjectService.getUserProjectsByUserId(userId);
+    @GetMapping("/user/{studentId}")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'MENTOR') or #studentId == authentication.principal.id")
+    public ResponseEntity<ApiResponse> getAssignedProjects(@PathVariable String studentId, Authentication authentication) {
+        List<Project> projects = userProjectService.getAssignedProjects(studentId);
+        return ResponseEntity.ok(new ApiResponse(200, "Assigned projects fetched successfully", projects,null));
     }
+
     //change the status of a students project
     @PutMapping("/users/{userId}/projects/{projectId}")
-    @PreAuthorize("hasRole('MENTOR')")
-    public ResponseEntity<String> updateUserProjectStatus(
+    @PreAuthorize("hasAuthority('MENTOR')")
+    public ResponseEntity<ApiResponse> updateUserProjectStatus(
             @PathVariable String userId,
             @PathVariable Integer projectId,
-            @RequestBody Map<String, String> request) {
+            @RequestParam Map<String, String> request) {
 
         String status = request.get("status");
         userProjectService.updateUserProjectStatus(userId, projectId, status);
 
-        return ResponseEntity.ok("Project status updated successfully");
+        return ResponseEntity.ok(new ApiResponse(200, "Project status updated successfully", "Status: " + status,null));
     }
 
     // @GetMapping("/project/{projectId}") // Needed if mentor wants to see all the students in a project
@@ -49,18 +58,17 @@ public class UserProjectController {
     //     return userProjectService.getUsersByProjectId(projectId);
     // }
 
-    @PostMapping // Only mentors
-    public ResponseEntity<UserProject> addUserProject(@RequestBody UserProject userProject) {
-        try {
+    @PostMapping
+    @PreAuthorize("hasAuthority('MENTOR')")
+    public ResponseEntity<ApiResponse<String>> addUserProject(@RequestBody UserProject userProject) {
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+        System.out.println("User Roles: " + auth.getAuthorities()); // Debugging line
+
+
             UserProject createdUserProject = userProjectService.addUserProject(userProject);
-            return ResponseEntity.status(201).body(createdUserProject);
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body(null); // Internal server error response
+            return ResponseEntity.status(201).body(new ApiResponse(200, "User project added successfully", createdUserProject,null));
+
+
         }
     }
 
-    // @DeleteMapping("/{id}") // Do soft delete
-    // public void deleteUserProject(@PathVariable int id) {
-    //     userProjectService.deleteUserProject(id);
-    // }
-}

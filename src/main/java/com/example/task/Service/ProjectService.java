@@ -86,6 +86,8 @@ public class ProjectService {
 //        return userProjectRepository.countByStatus("ONGOING");
 //    }
 
+
+
     // Get all projects for a user
     public List<ProjectDTO> getUserProjects(String userId) {
         Optional<User> userOptional = userRepository.findById(userId);
@@ -112,23 +114,23 @@ public class ProjectService {
         return projectMapper.toDTO(project);
     }
 
-    // Update project status for a user
-    public ProjectDTO updateUserProjectStatus(String userId, Integer projectId, ProjectDTO projectDTO) {
-        Optional<User> userOptional = userRepository.findById(userId);
-        if (!userOptional.isPresent()) {
-            throw new RuntimeException("User not found with ID: " + userId);
-        }
-
-        Optional<Project> projectOptional = projectRepository.findByIdAndMentor(projectId, userOptional.get());
-        if (!projectOptional.isPresent()) {
-            throw new RuntimeException("Project not found for user ID: " + userId);
-        }
-
-        Project project = projectOptional.get();
-
-        projectRepository.save(project);
-        return projectMapper.toDTO(project);
-    }
+//    // Update project status for a user
+//    public ProjectDTO updateUserProjectStatus(String userId, Integer projectId, ProjectDTO projectDTO) {
+//        Optional<User> userOptional = userRepository.findById(userId);
+//        if (!userOptional.isPresent()) {
+//            throw new RuntimeException("User not found with ID: " + userId);
+//        }
+//
+//        Optional<Project> projectOptional = projectRepository.findByIdAndMentor(projectId, userOptional.get());
+//        if (!projectOptional.isPresent()) {
+//            throw new RuntimeException("Project not found for user ID: " + userId);
+//        }
+//
+//        Project project = projectOptional.get();
+//
+//        projectRepository.save(project);
+//        return projectMapper.toDTO(project);
+//    }
 
     // Delete a project assigned to a user
     public void deleteUserProject(String userId, Integer projectId) {
@@ -173,7 +175,7 @@ public class ProjectService {
         return projectMapper.toDTO(project);
     }
 
-    // Get projects based on user role (returns all projects for now)
+    // Get projects based on user role
     public List<ProjectDTO> getProjectsByUserRole() {
         List<Project> projects = projectRepository.findAll();
         return projects.stream().map(projectMapper::toDTO).collect(Collectors.toList());

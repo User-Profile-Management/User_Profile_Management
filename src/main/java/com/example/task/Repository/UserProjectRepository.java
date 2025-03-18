@@ -21,15 +21,20 @@ public interface UserProjectRepository extends JpaRepository<UserProject, Intege
 
     Optional<UserProject> findByUserAndProject(User user, Project project);
 
-    Optional<UserProject> findByUserIdAndProjectId(String userId, int projectId);
+    @Query("SELECT up FROM UserProject up WHERE up.user.id = :userId AND up.project.id = :projectId")
+    Optional<UserProject> findByUserIdAndProjectId(@Param("userId") String userId, @Param("projectId") Integer projectId);
+
 
     List<UserProject> findByUserId(String userId);
 
     @Query("SELECT COUNT(up) FROM UserProject up " +
             "WHERE up.user.id = :userId AND up.status = :status")
     int countByUserIdAndStatus(@Param("userId") String userId, @Param("status") String status);
+    @Query("SELECT u FROM UserProject u WHERE u.deletedAt IS NULL")
+    List<UserProject> findAllActiveUserProjects();
 
-
+    @Query("SELECT up.project FROM UserProject up WHERE up.userId = :studentId AND up.deletedAt IS NULL")
+    List<Project> findProjectsByStudentId(@Param("studentId") String studentId);
 
     int countByStatus(String status);
 

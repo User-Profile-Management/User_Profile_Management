@@ -6,6 +6,7 @@ import com.example.task.Entity.User;
 import com.example.task.Repository.UserRepository;
 import com.example.task.Util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
@@ -19,22 +20,29 @@ import java.util.Optional;
 @Service
 public class AuthService {
 
-    @Autowired
-    private AuthenticationManager authenticationManager;
+    private final AuthenticationManager authenticationManager;
+    private final UserDetailsService userDetailsService;
+    private final JwtUtil jwtUtil;
+    private final UserRepository userRepository;
+    private final CustomUserDetailService customUserDetailService;  // ✅ Correctly defined
 
     @Autowired
-    private UserDetailsService userDetailsService;
-
-    @Autowired
-    private JwtUtil jwtUtil;
-
-    @Autowired
-    private UserRepository userRepository;
-
+    public AuthService(
+            AuthenticationManager authenticationManager,
+            @Qualifier("userService") UserDetailsService userDetailsService,
+            JwtUtil jwtUtil,
+            UserRepository userRepository,
+            CustomUserDetailService customUserDetailService) {  // ✅ Added to constructor
+        this.authenticationManager = authenticationManager;
+        this.userDetailsService = userDetailsService;
+        this.jwtUtil = jwtUtil;
+        this.userRepository = userRepository;
+        this.customUserDetailService = customUserDetailService; // ✅ Now properly assigned
+    }
 
     public JWTResponse authenticateUser(LoginRequestDTO loginRequest) throws Exception {
         try {
-            // Directly authenticate, without manually fetching user first
+            // Authenticate the user
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword())
             );
@@ -44,8 +52,26 @@ public class AuthService {
             throw new DisabledException("User account is disabled");
         }
 
-        // Generate token (User is already authenticated, no need to fetch again)
-        String token = jwtUtil.generateToken(loginRequest.getEmail());
+        // Check if user is active
+        Optional<User> userOptional = userRepository.findByEmail(loginRequest.getEmail());
+        if (userOptional.isEmpty()) {
+            throw new BadCredentialsException("User not found");
+        }
+
+        User user = userOptional.get();
+        if (user.getStatus() != User.Status.ACTIVE) {
+            throw new DisabledException("Your account is pending approval");
+        }
+
+        // Generate JWT token
+        UserDetails userDetails = userDetailsService.loadUserByUsername(loginRequest.getEmail());
+        String token = jwtUtil.generateToken(userDetails);
+
+        // ✅ Check and assign badge properly
+        customUserDetailService.checkAndAssignBadge(user.getUserId());
+
         return new JWTResponse(token);
     }
 }
+
+

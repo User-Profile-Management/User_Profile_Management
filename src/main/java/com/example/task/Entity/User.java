@@ -25,9 +25,9 @@ public class User {
 
 
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY) // Change to EAGER if needed
     @JoinColumn(name = "role_id", nullable = false)
-    @Fetch(FetchMode.JOIN)
+    @Fetch(FetchMode.JOIN)  // Ensures role is fetched in a single query
     private Role role;
 
     @Column(name = "full_name", nullable = false)
