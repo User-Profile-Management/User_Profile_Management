@@ -67,7 +67,7 @@ public class AuthService {
         UserDetails userDetails = userDetailsService.loadUserByUsername(loginRequest.getEmail());
         String token = jwtUtil.generateToken(userDetails);
 
-        // ✅ Check and assign badge properly
+        //  Check and assign badge properly
         customUserDetailService.checkAndAssignBadge(user.getUserId());
 
         return new JWTResponse(token);

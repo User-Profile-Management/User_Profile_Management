@@ -16,13 +16,14 @@ public interface UserProjectRepository extends JpaRepository<UserProject, Intege
     // Fetch all projects assigned to a specific user
     List<UserProject> findByUser(User user);
 
+    Optional<UserProject> findByUserUserIdAndProjectProjectId(String userId, Integer projectId);
     // Fetch all users assigned to a specific project
     List<UserProject> findByProject(Project project);
 
     Optional<UserProject> findByUserAndProject(User user, Project project);
 
-    @Query("SELECT up FROM UserProject up WHERE up.user.id = :userId AND up.project.id = :projectId")
-    Optional<UserProject> findByUserIdAndProjectId(@Param("userId") String userId, @Param("projectId") Integer projectId);
+//    @Query("SELECT up FROM UserProject up WHERE up.user.id = :userId AND up.project.id = :projectId")
+//    Optional<UserProject> findByUserIdAndProjectId(@Param("userId") String userId, @Param("projectId") Integer projectId);
 
 
     List<UserProject> findByUserId(String userId);
@@ -38,4 +39,5 @@ public interface UserProjectRepository extends JpaRepository<UserProject, Intege
 
     int countByStatus(String status);
 
+    Optional<Object> findByUserIdAndProjectId(String userId, Integer projectId);
 }

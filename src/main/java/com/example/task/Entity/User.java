@@ -69,10 +69,13 @@ public class User {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+
+
     public enum Status {
         ACTIVE,
         INACTIVE,
-        BANNED
+        PENDING,
+        REJECTED
     }
 
     @PrePersist

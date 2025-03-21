@@ -1,6 +1,5 @@
 package com.example.task.Mapper;
 
-
 import com.example.task.DTO.ProjectDTO;
 import com.example.task.Entity.Project;
 import com.example.task.Entity.User;
@@ -9,31 +8,23 @@ import org.springframework.stereotype.Component;
 @Component
 public class ProjectMapper {
 
+    // Convert Project entity to ProjectDTO (Only returning mentor ID)
     public ProjectDTO toDTO(Project project) {
-        ProjectDTO dto = new ProjectDTO();
-        dto.setId(project.getId());
-        dto.setProjectName(project.getProjectName());
-        dto.setDescription(project.getDescription());
-
-        dto.setMentorId(project.getMentor() != null ? project.getMentor().getUserId() : null);
-        return dto;
+        return ProjectDTO.builder()
+                .projectId(project.getProjectId())
+                .projectName(project.getProjectName())
+                .description(project.getDescription())
+                .mentorId(project.getMentor() != null ? project.getMentor().getUserId() : null) // Store only mentor ID
+                .build();
     }
 
+    // Convert ProjectDTO to Project entity (Requires full User object)
     public Project toEntity(ProjectDTO dto, User mentor) {
-        Project project = new Project();
-        project.setId(dto.getId());
-        project.setProjectName(dto.getProjectName());
-        project.setDescription(dto.getDescription());
-
-        project.setMentor(mentor);
-        return project;
-    }
-
-    public Project toEntity(ProjectDTO projectDTO) {
-        Project project = new Project();
-        project.setProjectName(projectDTO.getProjectName());
-        project.setDescription(projectDTO.getDescription());
-
-        return project;
+        return Project.builder()
+                .projectId(dto.getProjectId())
+                .projectName(dto.getProjectName())
+                .description(dto.getDescription())
+                .mentor(mentor) // Attach full mentor entity
+                .build();
     }
 }

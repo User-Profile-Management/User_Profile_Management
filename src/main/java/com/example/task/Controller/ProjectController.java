@@ -2,6 +2,11 @@ package com.example.task.Controller;
 
 import com.example.task.DTO.ApiResponse;
 import com.example.task.DTO.ProjectDTO;
+import com.example.task.Entity.Project;
+import com.example.task.Entity.User;
+import com.example.task.Repository.ProjectRepository;
+import com.example.task.Repository.UserProjectRepository;
+import com.example.task.Repository.UserRepository;
 import com.example.task.Service.ProjectService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -9,28 +14,30 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/projects")
 public class ProjectController {
 
     private final ProjectService projectService;
+    private final UserRepository userRepository;
+    private final UserProjectRepository userProjectRepository;
+    private final ProjectRepository projectRepository;
 
-    public ProjectController(ProjectService projectService) {
+    public ProjectController(ProjectService projectService, UserRepository userRepository,UserProjectRepository userProjectRepository,ProjectRepository projectRepository) {
         this.projectService = projectService;
+        this.userRepository = userRepository;
+        this.userProjectRepository = userProjectRepository;
+        this.projectRepository = projectRepository;
     }
 
-//    // Get count of completed projects for a user
-//    @GetMapping("/user/{userId}/projects/completed_count")
-//    public ResponseEntity<Integer> getCompletedProjectCount(@PathVariable String userId) {
-//        return ResponseEntity.ok(projectService.getCompletedProjectCount(userId));
-//    }
 
     // Edit project for everyone
     // Get a specific project by ID
     @GetMapping("/{projectId}")
     public ResponseEntity<ApiResponse<ProjectDTO>> getProjectById(@PathVariable Integer projectId) {
-        ProjectDTO project = projectService.getProjectById(projectId);
+        ProjectDTO project = projectService.getProjectByProjectId(projectId);
         if (project != null) {
             return ResponseEntity.ok(new ApiResponse<>(200, "Project found", project,null));
         } else {
@@ -44,31 +51,62 @@ public class ProjectController {
     public ResponseEntity<ApiResponse<ProjectDTO>> updateProject(
             @PathVariable Integer projectId,
             @RequestBody ProjectDTO projectDTO) {
-        ProjectDTO updatedProject = projectService.updateProject(projectId, projectDTO);
+        try {
+            // Fetch the project to check its deletedAt status
+            ProjectDTO existingProject = projectService.getProjectByProjectId(projectId);
 
-        if (updatedProject != null) {
-            return ResponseEntity.ok(new ApiResponse<>(200, "Project updated successfully", updatedProject,null));
-        } else {
-            return ResponseEntity.status(404).body(new ApiResponse<>(404, "Project not found", null,null));
+            if (existingProject == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(new ApiResponse<>(404, "Project not found", null, null));
+            }
+
+            // Check if the project is soft deleted
+            if (existingProject.getDeletedAt() != null) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(new ApiResponse<>(400, "Project is deleted and cannot be updated", null, null));
+            }
+
+            // Proceed with updating the project
+            ProjectDTO updatedProject = projectService.updateProject(projectId, projectDTO);
+            return ResponseEntity.ok(new ApiResponse<>(200, "Project updated successfully", updatedProject, null));
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(500, "Error updating project: " + e.getMessage(), null, e.getMessage()));
         }
     }
-
-    // Delete a project
+//delete a project from the project list
     @PreAuthorize("hasAuthority('ADMIN')")
     @DeleteMapping("/{projectId}")
     public ResponseEntity<ApiResponse<String>> deleteProject(@PathVariable Integer projectId) {
-        projectService.deleteProject(projectId);
-        ApiResponse<String> response = new ApiResponse<>(200, "Project deleted successfully.", null, null);
-        return ResponseEntity.ok(response);
+        try {
+            Optional<Project> projectOptional = projectRepository.findById(projectId);
+
+            if (projectOptional.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(new ApiResponse<>(404, "Project not found with ID: " + projectId, null, "Project not found"));
+            }
+
+            Project project = projectOptional.get();
+
+            if (project.getDeletedAt() != null) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(new ApiResponse<>(400, "Project is already deleted.", null, "Project already deleted"));
+            }
+
+            projectService.deleteProject(projectId);
+            return ResponseEntity.ok(new ApiResponse<>(200, "Project deleted successfully.", null, null));
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(500, "Error deleting project: " + e.getMessage(), null, e.getMessage()));
+        }
     }
 
 
 
-//    // Get ongoing project count
-//    @GetMapping("/user/projects/ongoing_count")
-//    public ResponseEntity<Integer> getOngoingProjectCount() {
-//        return ResponseEntity.ok(projectService.getOngoingProjectCount());
-//    }
+
+
 
     // Get all projects for a user
     @GetMapping("/user/{userId}/projects")
@@ -85,23 +123,7 @@ public class ProjectController {
     }
 
 
-    // Add a project for a user
-    @PostMapping("/user/{userId}/projects")
-    public ResponseEntity<ApiResponse<ProjectDTO>> addUserProject(
-            @PathVariable Integer userId,
-            @RequestBody ProjectDTO projectDTO) {
 
-        try {
-            ProjectDTO createdProject = projectService.addUserProject(String.valueOf(userId), projectDTO);
-
-            ApiResponse<ProjectDTO> response = new ApiResponse<>(201, "Project added successfully", createdProject, null);
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
-
-        } catch (Exception e) {
-            ApiResponse<ProjectDTO> response = new ApiResponse<>(500, "Error adding project: " + e.getMessage(), null, e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-        }
-    }
 
 
 
@@ -139,12 +161,41 @@ public class ProjectController {
     }
 
 
-    // Add a new project
     @PreAuthorize("hasAuthority('ADMIN')")
     @PostMapping
     public ResponseEntity<ApiResponse<ProjectDTO>> createProject(@RequestBody ProjectDTO projectDTO) {
         try {
+            // Ensure mentorId is provided
+            if (projectDTO.getMentorId() == null) {
+                throw new RuntimeException("Mentor ID is required.");
+            }
+
+            // Fetch the mentor from the database
+            User mentor = userRepository.findById(projectDTO.getMentorId())
+                    .orElseThrow(() -> new RuntimeException("Mentor not found with ID: " + projectDTO.getMentorId()));
+
+            // Check if the user is actually a mentor
+            if (!"MENTOR".equalsIgnoreCase(mentor.getRole().getRoleName())) {
+                throw new RuntimeException("User " + mentor.getUserId() + " is not a mentor.");
+            }
+
+            // Ensure mentor is active and not soft deleted
+            if (!"ACTIVE".equalsIgnoreCase(mentor.getStatus().name()) || mentor.getDeletedAt() != null) {
+                throw new RuntimeException("Mentor " + mentor.getUserId() + " is inactive or deleted.");
+            }
+
+            // Check if the mentor is already assigned to the project
+            if (userProjectRepository.findByUserIdAndProjectId(mentor.getUserId(), projectDTO.getProjectId()).isPresent()) {
+                throw new RuntimeException("Mentor is already assigned to this project.");
+            }
+
+            // Set the mentor before passing to service
+            projectDTO.setMentorId(mentor.getUserId());
+
+            // Proceed with project creation
             ProjectDTO createdProject = projectService.createProject(projectDTO);
+
+            // Create the response
             ApiResponse<ProjectDTO> response = new ApiResponse<>(201, "Project created successfully", createdProject, null);
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
 
@@ -153,6 +204,9 @@ public class ProjectController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
+
+
+
 
 
     // Get projects based on user role
@@ -175,9 +229,5 @@ public class ProjectController {
     }
 
 
-//    // Get count of completed projects
-//    @GetMapping("/user/projects/completed_count")
-//    public ResponseEntity<Integer> getCompletedProjectsCount() {
-//        return ResponseEntity.ok(projectService.getCompletedProjectsCount());
-//    }
+
 }

@@ -48,25 +48,41 @@ public class UserProjectService {
     public UserProject addUserProject(UserProject userProject) {
         // Fetch user
         User user = userRepository.findById(userProject.getUserId())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("User not found: " + userProject.getUserId()));
+
+        // Ensure user is ACTIVE
+        if (!"ACTIVE".equalsIgnoreCase(user.getStatus().name())) {
+            throw new RuntimeException("User " + user.getUserId() + " is not active. Cannot assign project.");
+        }
 
         // Fetch project
-        Project project = projectRepository.findById(userProject.getProjectId()) // ✅ FIXED
-                .orElseThrow(() -> new RuntimeException("Project not found"));
+        Project project = projectRepository.findById(userProject.getProjectId())
+                .orElseThrow(() -> new RuntimeException("Project not found: " + userProject.getProjectId()));
 
-        // Check if the user is already assigned to the project
-        if (userProjectRepository.findByUserIdAndProjectId(user.getUserId(), project.getId()).isPresent()) {
+        // Prevent duplicate assignment
+        if (userProjectRepository.findByUserIdAndProjectId(user.getUserId(), project.getProjectId()).isPresent()) {
             throw new RuntimeException("User is already assigned to this project.");
+        }
+
+        // Ensure status is not null
+        if (userProject.getStatus() == null) {
+            throw new RuntimeException("Project status cannot be null.");
         }
 
         // Set associations
         userProject.setUser(user);
         userProject.setProject(project);
 
-        return userProjectRepository.save(userProject);
+        try {
+            return userProjectRepository.save(userProject);
+        } catch (Exception e) {
+            throw new RuntimeException("Error saving UserProject: " + e.getMessage(), e);
+        }
     }
 
-    
+
+
+
 
     public List<Project> getAssignedProjects(String studentId) {
         // Fetch only non-deleted projects assigned to the student
@@ -86,7 +102,7 @@ public class UserProjectService {
     public void updateUserProjectStatus(String userId, Integer projectId, String status) {
         System.out.println("Updating project status for user: " + userId + ", project: " + projectId);
 
-        UserProject userProject = userProjectRepository.findByUserIdAndProjectId(userId, projectId)
+        UserProject userProject = userProjectRepository.findByUserUserIdAndProjectProjectId(userId, projectId)
                 .orElseThrow(() -> new RuntimeException("User is not assigned to this project"));
 
         System.out.println("Found UserProject: " + userProject.getId() + " with current status: " + userProject.getStatus());

@@ -25,7 +25,7 @@ public class UserProject {
     @Column(name = "project_id", nullable = false)
     private int projectId;
 
-    @Column(name = "status")
+    @Column(name = "status",nullable = false)
 
     private String status;
     @ManyToOne

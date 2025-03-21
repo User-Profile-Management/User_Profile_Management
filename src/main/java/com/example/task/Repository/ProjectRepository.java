@@ -2,6 +2,7 @@ package com.example.task.Repository;
 
 import com.example.task.Entity.Project;
 import com.example.task.Entity.User;
+import com.example.task.Entity.UserProject;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -14,10 +15,10 @@ import java.util.Optional;
 public interface ProjectRepository extends JpaRepository<Project, Integer> {
 
     // Find a project by its ID and Mentor (for user-specific project operations)
-    Optional<Project> findByIdAndMentor(Integer projectId, User mentor);
+    Optional<Project> findByProjectIdAndMentor(Integer projectId, User mentor);
 
-//    // Count the number of projects completed by a specific mentor
-//    Integer countByMentorAndStatus(User mentor, String status);
+
+
 
 
 
@@ -30,5 +31,7 @@ public interface ProjectRepository extends JpaRepository<Project, Integer> {
     // Fetch only active projects for a mentor
     List<Project> findByMentorAndDeletedAtIsNull(User mentor);
 
-//    Integer countByStatus(String completed);
+
+    Optional<Project> findByProjectNameAndMentor(String projectName, User mentor);
+
 }

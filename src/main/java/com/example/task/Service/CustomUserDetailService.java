@@ -1,22 +1,35 @@
 package com.example.task.Service;
 
 import com.example.task.Entity.Badge;
+import com.example.task.Entity.User;
 import com.example.task.Entity.UserBadge;
 import com.example.task.Repository.BadgeRepository;
 import com.example.task.Repository.UserBadgeRepository;
 import com.example.task.Repository.UserProjectRepository;
+import com.example.task.Repository.UserRepository;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
+import java.util.Optional;
+
 @Service
-public class CustomUserDetailService {
+public class CustomUserDetailService implements UserDetailsService {
+
+    private final UserRepository userRepository;
     private final UserProjectRepository userProjectRepository;
     private final UserBadgeRepository userBadgeRepository;
     private final BadgeRepository badgeRepository;
 
-    public CustomUserDetailService(UserProjectRepository userProjectRepository,
+    public CustomUserDetailService(UserRepository userRepository,
+                                   UserProjectRepository userProjectRepository,
                                    UserBadgeRepository userBadgeRepository,
                                    BadgeRepository badgeRepository) {
+        this.userRepository = userRepository;
         this.userProjectRepository = userProjectRepository;
         this.userBadgeRepository = userBadgeRepository;
         this.badgeRepository = badgeRepository;
@@ -30,17 +43,37 @@ public class CustomUserDetailService {
             case 1 -> "Bronze";
             case 2 -> "Silver";
             case 3 -> "Gold";
-            default -> null; // No badge if count < 1
+            default -> null;
         };
 
         if (badgeName != null && !userBadgeRepository.existsByUserIdAndBadgeName(userId, badgeName)) {
-            Badge badge = badgeRepository.findByName(badgeName)
-                    .orElseThrow(() -> new RuntimeException("Badge not found: " + badgeName));
+            Optional<Badge> badgeOptional = badgeRepository.findByName(badgeName);
 
-            UserBadge userBadge = new UserBadge();
-            userBadge.setUserId(userId);
-            userBadge.setBadge(badge);
-            userBadgeRepository.save(userBadge);
+            if (badgeOptional.isPresent()) {
+                UserBadge userBadge = new UserBadge();
+                userBadge.setUserId(userId);
+                userBadge.setBadge(badgeOptional.get());
+                userBadgeRepository.save(userBadge);
+            } else {
+                System.err.println("Badge not found: " + badgeName);
+            }
         }
+    }
+
+    // ✅ Load user by username (email)
+    @Override
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + email));
+
+        System.out.println("Loading user details for: " + email);
+        System.out.println("Role ID: " + user.getRole().getRoleId()); // 🔥 Debugging line
+        System.out.println("Role Name: " + user.getRole().getRoleName()); // 🔥 Debugging line
+
+        return new org.springframework.security.core.userdetails.User(
+                user.getEmail(),
+                user.getPassword(),
+                Collections.singleton(new SimpleGrantedAuthority(user.getRole().getRoleName()))
+        );
     }
 }

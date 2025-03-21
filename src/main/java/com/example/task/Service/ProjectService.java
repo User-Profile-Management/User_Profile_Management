@@ -7,6 +7,7 @@ import com.example.task.Mapper.ProjectMapper;
 import com.example.task.Repository.ProjectRepository;
 import com.example.task.Repository.UserProjectRepository;
 import com.example.task.Repository.UserRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -41,11 +42,13 @@ public class ProjectService {
 //        }
 //    }
 
-    public ProjectDTO getProjectById(Integer projectId) {
+    public ProjectDTO getProjectByProjectId(Integer projectId) {
         return projectRepository.findById(projectId)
-                .map(projectMapper::toDTO)
-                .orElse(null); // Return null if project is not found
+                .filter(project -> project.getDeletedAt() == null) // Check if the project is not deleted
+                .map(projectMapper::toDTO)  // Convert to DTO
+                .orElse(null); // Return null if the project is deleted or not found
     }
+
 
     // Edit a project
     public ProjectDTO updateProject(Integer projectId, ProjectDTO projectDTO) {
@@ -96,10 +99,19 @@ public class ProjectService {
         }
 
         User user = userOptional.get();
-        return projectRepository.findByMentorAndDeletedAtIsNull(user).stream()
-                .map(projectMapper::toDTO)
-                .collect(Collectors.toList());
+        // Fetch the user's projects but exclude projects where deletedAt is not null
+        List<Project> projects = projectRepository.findByMentorAndDeletedAtIsNull(user);
+
+        // Log to check the deletedAt value for each project (for debugging purposes)
+        projects.forEach(project -> {
+            System.out.println("Project ID: " + project.getProjectId() + ", Deleted At: " + project.getDeletedAt());
+        });
+
+        return projects.stream()
+                .map(projectMapper::toDTO)  // Map to DTO
+                .collect(Collectors.toList()); // Collect the result into a list
     }
+
 
     // Add a project for a user
     public ProjectDTO addUserProject(String userId, ProjectDTO projectDTO) {
@@ -139,7 +151,7 @@ public class ProjectService {
             throw new RuntimeException("User not found with ID: " + userId);
         }
 
-        Optional<Project> projectOptional = projectRepository.findByIdAndMentor(projectId, userOptional.get());
+        Optional<Project> projectOptional = projectRepository.findByProjectIdAndMentor(projectId, userOptional.get());
         if (projectOptional.isEmpty()) {
             throw new RuntimeException("Project not found for user ID: " + userId);
         }
@@ -160,20 +172,31 @@ public class ProjectService {
         List<Project> projects = projectRepository.findByDeletedAtIsNull();
         return projects.stream().map(projectMapper::toDTO).collect(Collectors.toList());
     }
-
+    @Transactional
     public ProjectDTO createProject(ProjectDTO projectDTO) {
-        Optional<User> mentorOptional = userRepository.findById(projectDTO.getMentorId());
+        // Fetch the mentor using the mentorId
+        User mentor = userRepository.findById(projectDTO.getMentorId())
+                .orElseThrow(() -> new RuntimeException("Mentor not found with ID: " + projectDTO.getMentorId()));
 
-        if (!mentorOptional.isPresent()) {
-            throw new RuntimeException("Mentor not found with ID: " + projectDTO.getMentorId());
+        // Check if a project with the same name already exists for this mentor
+        Optional<Project> existingProject = projectRepository.findByProjectNameAndMentor(
+                projectDTO.getProjectName(), mentor);
+
+        if (existingProject.isPresent()) {
+            throw new RuntimeException("Project with name '" + projectDTO.getProjectName() + "' already exists for this mentor.");
         }
 
-        Project project = projectMapper.toEntity(projectDTO, mentorOptional.get());
-        project.setMentor(mentorOptional.get()); // Ensure mentor is set before saving
+        // Convert DTO to Entity with the fetched mentor
+        Project project = projectMapper.toEntity(projectDTO, mentor);
 
+        // Save the project
         project = projectRepository.save(project);
+
+        // Return the saved project as a DTO
         return projectMapper.toDTO(project);
     }
+
+
 
     // Get projects based on user role
     public List<ProjectDTO> getProjectsByUserRole() {

@@ -1,6 +1,7 @@
 package com.example.task.Controller;
 
 import com.example.task.DTO.ApiResponse;
+import com.example.task.DTO.ProfileDTO;
 import com.example.task.DTO.RegisterUserDTO;
 import com.example.task.Entity.User;
 import com.example.task.Service.UserService;
@@ -10,12 +11,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api")
@@ -30,156 +35,217 @@ public class UserController {
         this.jwtUtil = jwtUtil;
     }
 
-
     @PostMapping("/users/register")
     public ResponseEntity<ApiResponse<?>> registerUser(@RequestBody RegisterUserDTO userDTO) {
         try {
-            // Validate required fields
             if (userDTO.getFullName() == null || userDTO.getFullName().trim().isEmpty()) {
-                ApiResponse<String> errorResponse = new ApiResponse<>(400, "Full Name is required.", null, "Full Name is required.");
-                return ResponseEntity.badRequest().body(errorResponse);
+                return ResponseEntity.badRequest().body(new ApiResponse<>(400, "Full Name is required.", null, "Full Name is required."));
             }
             if (userDTO.getEmail() == null || userDTO.getEmail().trim().isEmpty()) {
-                ApiResponse<String> errorResponse = new ApiResponse<>(400, "Email is required.", null, "Email is required.");
-                return ResponseEntity.badRequest().body(errorResponse);
+                return ResponseEntity.badRequest().body(new ApiResponse<>(400, "Email is required.", null, "Email is required."));
             }
             if (userDTO.getPassword() == null || userDTO.getPassword().trim().isEmpty()) {
-                ApiResponse<String> errorResponse = new ApiResponse<>(400, "Password is required.", null, "Password is required.");
-                return ResponseEntity.badRequest().body(errorResponse);
+                return ResponseEntity.badRequest().body(new ApiResponse<>(400, "Password is required.", null, "Password is required."));
             }
-            // Validate password length (minimum 8 characters)
             if (userDTO.getPassword().length() < 8) {
-                ApiResponse<String> errorResponse = new ApiResponse<>(400, "Password must be at least 8 characters long.", null, "Password length is insufficient.");
-                return ResponseEntity.badRequest().body(errorResponse);
+                return ResponseEntity.badRequest().body(new ApiResponse<>(400, "Password must be at least 8 characters long.", null, "Password length is insufficient."));
             }
-            if (userDTO.getContactNo() == null || userDTO.getContactNo().trim().isEmpty()) {
-                ApiResponse<String> errorResponse = new ApiResponse<>(400, "Contact Number is required.", null, "Contact Number is required.");
-                return ResponseEntity.badRequest().body(errorResponse);
-            }
-
-            if (!userDTO.getContactNo().matches("\\d{10}")) {
-                ApiResponse<String> errorResponse = new ApiResponse<>(400, "Contact Number must be exactly 10 digits.", null, "Invalid Contact Number format.");
-                return ResponseEntity.badRequest().body(errorResponse);
+            if (userDTO.getContactNo() == null || !userDTO.getContactNo().matches("\\d{10}")) {
+                return ResponseEntity.badRequest().body(new ApiResponse<>(400, "Contact Number must be exactly 10 digits.", null, "Invalid Contact Number format."));
             }
             if (userDTO.getDateOfBirth() == null) {
-                ApiResponse<String> errorResponse = new ApiResponse<>(400, "Date of Birth is required.", null, "Date of Birth is required.");
-                return ResponseEntity.badRequest().body(errorResponse);
+                return ResponseEntity.badRequest().body(new ApiResponse<>(400, "Date of Birth is required.", null, "Date of Birth is required."));
             }
-
             if (userDTO.getAddress() == null || userDTO.getAddress().trim().isEmpty()) {
-                ApiResponse<String> errorResponse = new ApiResponse<>(400, "Address is required.", null, "Address is required.");
-                return ResponseEntity.badRequest().body(errorResponse);
+                return ResponseEntity.badRequest().body(new ApiResponse<>(400, "Address is required.", null, "Address is required."));
             }
             if (userDTO.getRoleName() == null || userDTO.getRoleName().trim().isEmpty()) {
-                ApiResponse<String> errorResponse = new ApiResponse<>(400, "Role is required.", null, "Role is required.");
-                return ResponseEntity.badRequest().body(errorResponse);
+                return ResponseEntity.badRequest().body(new ApiResponse<>(400, "Role is required.", null, "Role is required."));
+            }
+            if (userDTO.getEmergencyContact() != null && !userDTO.getEmergencyContact().matches("\\d{10}")) {
+                return ResponseEntity.badRequest().body(new ApiResponse<>(400, "Emergency Contact Number must be exactly 10 digits.", null, "Invalid Emergency Contact format."));
             }
 
-            // Validate emergency contact if provided
-            if (userDTO.getEmergencyContact() != null &&
-                    !userDTO.getEmergencyContact().trim().isEmpty() &&
-                    !userDTO.getEmergencyContact().matches("\\d{10}")) {
-                ApiResponse<String> errorResponse = new ApiResponse<>(400, "Emergency Contact Number must be exactly 10 digits.", null, "Invalid Emergency Contact format.");
-                return ResponseEntity.badRequest().body(errorResponse);
-            }
-
-            // Convert DTO to User entity
             User user = new User();
             user.setFullName(userDTO.getFullName());
             user.setDateOfBirth(userDTO.getDateOfBirth());
             user.setPassword(userDTO.getPassword());
             user.setContactNo(userDTO.getContactNo());
             user.setAddress(userDTO.getAddress());
-            user.setStatus(User.Status.INACTIVE); // Default status
+            user.setStatus(User.Status.PENDING);
             user.setProfilePicture(null);
             user.setEmail(userDTO.getEmail());
 
-            // Set emergency contact if provided
             if (userDTO.getEmergencyContact() != null && !userDTO.getEmergencyContact().trim().isEmpty()) {
                 user.setEmergencyContact(userDTO.getEmergencyContact());
             }
 
             User registeredUser = userService.registerUser(user, userDTO.getRoleName());
 
-            ApiResponse<User> response = new ApiResponse<>(200, "User registered successfully. Awaiting admin approval.", registeredUser, null);
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok(new ApiResponse<>(200, "User registered successfully. Awaiting admin approval.", registeredUser, null));
         } catch (Exception e) {
-            ApiResponse<String> errorResponse = new ApiResponse<>(500, "Error registering user: " + e.getMessage(), null, e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>(500, "Error registering user: " + e.getMessage(), null, e.getMessage()));
         }
     }
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @GetMapping("/users/count")
+    public ResponseEntity<ApiResponse<Long>> getActiveUserCount(@RequestParam String role) {
+        long count;
+        switch (role.toUpperCase()) {
+            case "MENTOR":
+                count = userService.getActiveMentorCount();
+                break;
+            case "STUDENT":
+                count = userService.getActiveStudentCount();
+                break;
+            default:
+                return ResponseEntity.badRequest().body(
+                        new ApiResponse<>(400, "Invalid role. Use 'MENTOR' or 'STUDENT'", null, "Invalid role parameter")
+                );
+        }
 
+        return ResponseEntity.ok(new ApiResponse<>(200, "Active " + role + " count retrieved successfully", count, null));
+    }
 
-    /**
-     * Get the current authenticated user's profile details
-     * Uses JWT token from the request to identify the user
-     */
     @GetMapping("/users/profile")
     public ResponseEntity<?> getOwnProfile() {
         try {
-            // Get authenticated user email from security context
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             String currentUserEmail = authentication.getName();
+
             Optional<User> currentUserOpt = userService.getUserByEmail(currentUserEmail);
 
             if (currentUserOpt.isEmpty()) {
-                ApiResponse<String> errorResponse = new ApiResponse<>(404, "User not found", null, "User with the given ID does not exist.");
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(new ApiResponse<>(404, "User not found", null, "User does not exist."));
             }
 
-
             User user = currentUserOpt.get();
-            return ResponseEntity.ok(user);
-        } catch (Exception e) {
-            ApiResponse<String> errorResponse = new ApiResponse<>(500, "Error retrieving profile", null, e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
-        }
+            ProfileDTO profileDTO = new ProfileDTO(
+                    user.getUserId(),
+                    user.getFullName(),
+                    user.getEmail(),
+                    user.getContactNo(),
+                    user.getAddress(),
+                    user.getDateOfBirth(),
+                    user.getStatus().name(), // Convert Enum to String
+                    user.getProfilePicture(),
+                    user.getRole().getRoleName() // Assuming Role has getRoleName()
+            );
 
+            return ResponseEntity.ok(new ApiResponse<>(200, "Profile retrieved successfully", profileDTO, null));
+
+        } catch (Exception e) {  // ✅ Add this catch block
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(500, "Error retrieving profile", null, e.getMessage()));
+        }
     }
 
-    // Secured for ADMIN only
-    @PreAuthorize("hasAuthority('ADMIN')")
-    @GetMapping("/admin/users")
-    public ResponseEntity<ApiResponse<List<User>>> getAllUsersForAdmin() {
-        List<User> users = userService.getAllUsers();
 
-        if (users == null || users.isEmpty()) {
-            ApiResponse<List<User>> response = new ApiResponse<>(204, "No users found", null, "No content available");
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(response);
-        }
 
-        ApiResponse<List<User>> response = new ApiResponse<>(200, "Users fetched successfully", users, null);
-        return ResponseEntity.ok(response);
-    }
 
-    // Public or role-based access (Modify if needed)
     @GetMapping("/users")
-    public ResponseEntity<List<User>> getAllUsers() {
-        List<User> users = userService.getAllUsers();
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'MENTOR')")
+    public ResponseEntity<ApiResponse<List<ProfileDTO>>> getUsers(
+            @RequestParam(required = false) String role,
+            @RequestParam(required = false) String status) {
 
-        if (users == null || users.isEmpty()) {
-            return ResponseEntity.noContent().build();
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String userRole = auth.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .findFirst()
+                .orElse("");
+
+        if (role != null) role = role.toUpperCase();
+        if (status != null) status = status.toUpperCase();
+
+        // MENTOR can only view STUDENT profiles
+        if (userRole.equals("MENTOR") && (role == null || !role.equals("STUDENT"))) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(new ApiResponse<>(403, "Forbidden: Mentors can only view students", null, "Access denied"));
         }
 
-        return ResponseEntity.ok(users);
+        //  Fetch Users from Service
+        List<User> users = userService.getUsersByRoleAndStatus(role, status);
+
+        if (users.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NO_CONTENT)
+                    .body(new ApiResponse<>(204, "No users found", Collections.emptyList(), null));
+        }
+
+        //  Convert List<User> to List<ProfileDTO>
+        List<ProfileDTO> profileDTOs = users.stream()
+                .map(user -> new ProfileDTO(
+                        user.getUserId(),
+                        user.getFullName(),
+                        user.getEmail(),
+                        user.getContactNo(),
+                        user.getAddress(),
+                        user.getDateOfBirth(),
+                        user.getStatus().name(), // Convert Enum to String
+                        user.getProfilePicture(),
+                        user.getRole().getRoleName() // Assuming Role has getRoleName()
+                ))
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(new ApiResponse<>(200, "Profile retrieved successfully", profileDTOs, null));
     }
 
-    @GetMapping("/users/{id}")
-    public ResponseEntity<?> getUserById(@PathVariable String id) {
-        Optional<User> user = userService.getUserById(id);
-        return user.map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+    //restore deleted user by the admin
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @PutMapping("/users/{userId}/restore")
+    public ResponseEntity<ApiResponse<String>> restoreUser(@PathVariable String userId) {
+        try {
+            userService.restoreUser(userId); // ✅ Uses the correct service method
+            return ResponseEntity.ok(new ApiResponse<>(200, "User restored successfully.", null, null));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ApiResponse<>(404, e.getMessage(), null, "User not found"));
+        }
     }
 
-    /**
-     * Update the current authenticated user's profile
-     * Uses JWT token from the request to identify the user
-     */
+
+    //done
+    @PutMapping("/users/{userId}/status")
+    public ResponseEntity<ApiResponse<String>> updateUserStatus(
+            @PathVariable String userId,
+            @RequestBody Map<String, String> request) {
+        try {
+            String status = request.get("status"); // Extract status from JSON
+
+            if (status == null || status.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(
+                        new ApiResponse<>(400, "Status is required.", null, "Status is empty or invalid.")
+                );
+            }
+
+            User user = userService.getUserById(userId)
+                    .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+
+            // Convert string to enum safely
+            try {
+                user.setStatus(User.Status.valueOf(status.toUpperCase()));
+            } catch (IllegalArgumentException e) {
+                return ResponseEntity.badRequest().body(
+                        new ApiResponse<>(400, "Invalid status value.", null, "Invalid status provided.")
+                );
+            }
+
+            user.setUpdatedAt(LocalDateTime.now());
+            userService.saveUser(user);
+
+            return ResponseEntity.ok(new ApiResponse<>(200, "User status updated successfully.", null, null));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    new ApiResponse<>(500, "Error updating user status: " + e.getMessage(), null, e.getMessage())
+            );
+        }
+    }
+
     @PutMapping("/users/profile")
-    @PreAuthorize("hasAnyAuthority('MENTOR', 'STUDENT)")
+    @PreAuthorize("hasAnyAuthority('MENTOR', 'STUDENT')")
     public ResponseEntity<?> updateOwnProfile(@RequestBody User updatedUser) {
         try {
-            // Get authenticated user ID from security context
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             String currentUserEmail = authentication.getName();
             Optional<User> currentUserOpt = userService.getUserByEmail(currentUserEmail);
@@ -188,116 +254,54 @@ public class UserController {
                 return ResponseEntity.badRequest().body("User not found");
             }
 
-            String userId = currentUserOpt.get().getUserId();
-
-            // Validate contact number
-            if (updatedUser.getContactNo() != null && !updatedUser.getContactNo().matches("\\d{10}")) {
-                return ResponseEntity.badRequest().body("Contact Number must be exactly 10 digits.");
-            }
-
-            // Validate emergency contact if provided
-            if (updatedUser.getEmergencyContact() != null &&
-                    !updatedUser.getEmergencyContact().trim().isEmpty() &&
-                    !updatedUser.getEmergencyContact().matches("\\d{10}")) {
-                return ResponseEntity.badRequest().body("Emergency Contact Number must be exactly 10 digits.");
-            }
-
-            User user = userService.updateUserProfile(userId, updatedUser);
+            User user = userService.updateUserProfile(currentUserOpt.get().getUserId(), updatedUser);
             return ResponseEntity.ok(user);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
-    /**
-     * Admin only endpoint for updating any user's profile by ID
-     */
     @PreAuthorize("hasAuthority('ADMIN')")
-    @PutMapping("/users/{userId}/status")
-    public ResponseEntity<?> updateUserStatus(@PathVariable String userId, @RequestParam User updatedUser) {
+    @DeleteMapping("/users/{id}")
+    public ResponseEntity<ApiResponse<String>> deleteUser(@PathVariable String id) {
         try {
-            if (updatedUser.getStatus() == null) {
-                return ResponseEntity.badRequest().body("Status is required.");
+            Optional<User> userOptional = userService.getUserById(id);
+
+            if (userOptional.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(new ApiResponse<>(404, "User not found with ID: " + id, null, "User not found"));
             }
 
-            User user = userService.getUserById(userId)
-                    .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+            User user = userOptional.get();
 
-            user.setStatus(updatedUser.getStatus());
-            user.setUpdatedAt(LocalDateTime.now());
+            if (user.getDeletedAt() != null) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(new ApiResponse<>(400, "User is already deleted.", null, "User already deleted"));
+            }
 
-            userService.saveUser(user); // Save the updated user status
-
-            return ResponseEntity.ok("User status updated successfully.");
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
-    }
-
-    @PreAuthorize("hasAnyAuthority('MENTOR', 'ADMIN')")
-    @GetMapping("/users/students")
-    public ResponseEntity<List<User>> getAllActiveStudents() {
-        List<User> students = userService.getActiveUsersByRole("STUDENT");
-
-        if (students.isEmpty()) {
-            return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.ok(students);
-    }
-
-    @PreAuthorize("hasAuthority('ADMIN')")
-    @GetMapping("/users/mentors")
-    public ResponseEntity<List<User>> getAllActiveMentors() {
-        List<User> mentors = userService.getActiveUsersByRole("MENTOR");
-
-        if (mentors.isEmpty()) {
-            return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.ok(mentors);
-    }
-
-    @PreAuthorize("hasAuthority('ADMIN')")
-    @GetMapping("/users/mentors/count")
-    public ResponseEntity<Long> getActiveMentorCount() {
-        Long count = userService.getActiveMentorCount();
-        return ResponseEntity.ok(count);
-    }
-
-    @PreAuthorize("hasAuthority('ADMIN')")
-    @GetMapping("/users/students/count")
-    public ResponseEntity<Long> getActiveStudentCount() {
-        Long count = userService.getActiveStudentCount();
-        return ResponseEntity.ok(count);
-    }
-
-    @PreAuthorize("hasAuthority('ADMIN')")
-    @GetMapping("/users/pending")
-    public ResponseEntity<List<User>> getPendingApprovalUsers() {
-        return ResponseEntity.ok(userService.getPendingApprovalUsers());
-    }
-
-    @PreAuthorize("hasAuthority('ADMIN')")
-    @DeleteMapping("/users/delete/{id}")
-    public ResponseEntity<String> deleteUser(@PathVariable String id) {
-        Optional<User> user = userService.getUserById(id);
-        if (user.isPresent()) {
             userService.deleteUser(id);
-            return ResponseEntity.ok("User deleted successfully (soft delete).");
-        } else {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.ok(new ApiResponse<>(200, "User deleted successfully.", null, null));
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(500, "Error deleting user: " + e.getMessage(), null, e.getMessage()));
         }
     }
+
 
     @PutMapping("/users/update-password")
-    public ResponseEntity<String> updatePassword(@RequestParam String email,
-                                                 @RequestParam String oldPassword,
-                                                 @RequestParam String newPassword) {
-        boolean success = userService.updatePassword(email, oldPassword, newPassword);
-
-        if (success) {
-            return ResponseEntity.ok("Password updated successfully.");
-        } else {
-            return ResponseEntity.badRequest().body("Invalid credentials or password update failed.");
+    public ResponseEntity<ApiResponse<String>> updatePassword(@RequestParam String email,
+                                                              @RequestParam String oldPassword,
+                                                              @RequestParam String newPassword) {
+        try {
+            boolean success = userService.updatePassword(email, oldPassword, newPassword);
+            if (success) {
+                return ResponseEntity.ok(new ApiResponse<>(200, "Password updated successfully.", null, null));
+            } else {
+                return ResponseEntity.badRequest().body(new ApiResponse<>(400, "Invalid credentials or password update failed.", null, "Password update failed."));
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>(500, "Error updating password", null, e.getMessage()));
         }
     }
 }

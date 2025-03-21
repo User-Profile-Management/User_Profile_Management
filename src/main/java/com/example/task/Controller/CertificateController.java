@@ -6,6 +6,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -15,13 +17,19 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/user/{userId}/certificates")
+@RequestMapping("/api/user/certificates")
 public class CertificateController {
 
     private final CertificateService certificateService;
 
+    private String getAuthenticatedUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return authentication.getName(); // Assuming the username is the userId
+    }
+
     @GetMapping
-    public ResponseEntity<List<CertificateDTO>> getCertificates(@PathVariable String userId) {
+    public ResponseEntity<List<CertificateDTO>> getCertificates() {
+        String userId = getAuthenticatedUserId();
         List<CertificateDTO> certificates = certificateService.getCertificatesByUserId(userId);
         return certificates.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(certificates);
     }
@@ -32,19 +40,18 @@ public class CertificateController {
 
         return ResponseEntity.ok()
                 .header("Content-Disposition", "attachment; filename=certificate_" + certificateId + ".pdf")
-                .contentType(MediaType.IMAGE_PNG)
+                .contentType(MediaType.APPLICATION_PDF)
                 .body(pdfData);
     }
 
-
-    @PostMapping(consumes = {"multipart/form-data"})  // Support file upload
+    @PostMapping(consumes = {"multipart/form-data"})
     @PreAuthorize("hasAuthority('STUDENT')")
     public ResponseEntity<CertificateDTO> addCertificate(
-            @PathVariable String userId,
             @RequestParam String certificateName,
             @RequestParam String issuedBy,
             @RequestParam("file") MultipartFile pdfFile) {
 
+        String userId = getAuthenticatedUserId();
         try {
             CertificateDTO createdCertificate = certificateService.addCertificate(userId, certificateName, issuedBy, pdfFile);
             return ResponseEntity.status(HttpStatus.CREATED).body(createdCertificate);

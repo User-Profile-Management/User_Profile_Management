@@ -39,6 +39,7 @@ public class SecurityConfig {
         this.userDetailsService = userDetailsService;
     }
 
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -57,31 +58,33 @@ public class SecurityConfig {
                         // Admin-only endpoints
                         .requestMatchers("/api/users/pending").hasAuthority("ADMIN")
                         .requestMatchers("/api/users/mentors").hasAuthority("ADMIN")
-                        .requestMatchers("/api/users/mentors/count").hasAuthority("ADMIN")
-                        .requestMatchers("/api/users/students/count").hasAuthority("ADMIN")
-                        .requestMatchers("/api/users/delete/*").hasAuthority("ADMIN")
+                        .requestMatchers("/api/users/count").hasAuthority("ADMIN")
+                                .requestMatchers("/api/users/pending").hasAuthority("ADMIN")
+                        .requestMatchers("/api/users/*").hasAuthority("ADMIN")
                         .requestMatchers("/api/users/*/status").hasAuthority("ADMIN")
+                                .requestMatchers(HttpMethod.PUT, "/api/users/{userId}/restore").hasAuthority( "ADMIN")
 
                         // Students endpoint for mentors and admins
-                        .requestMatchers("/api/users/students").hasAnyAuthority("MENTOR", "ADMIN")
+                        .requestMatchers("/api/users/active").hasAnyAuthority("MENTOR", "ADMIN")
 
                         // Project endpoints
                         .requestMatchers(HttpMethod.POST, "/api/projects").hasAuthority("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/projects").hasAuthority("ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/api/projects/*").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/projects/{projectId}").permitAll()
                         .requestMatchers(HttpMethod.PUT, "/api/projects/*").hasAnyAuthority("MENTOR", "ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/projects/*").hasAuthority("ADMIN")
 
                         // Certificate endpoints
-                        .requestMatchers(HttpMethod.POST, "/api/user/*/certificates").hasAuthority("STUDENT")
-                        .requestMatchers(HttpMethod.GET, "/api/user/*/certificates").permitAll()
-                        .requestMatchers(HttpMethod.DELETE, "/api/user/*/certificates/*").hasAuthority("STUDENT")
-                        .requestMatchers(HttpMethod.GET, "/api/user/*/certificates/*/download").permitAll()
+
+                        .requestMatchers(HttpMethod.POST, "/api/users/*/certificates").hasAuthority("STUDENT")
+                        .requestMatchers(HttpMethod.GET, "/api/users/*/certificates").permitAll()
+                        .requestMatchers(HttpMethod.DELETE, "/api/users/*/certificates/*").hasAuthority("STUDENT")
+                        .requestMatchers(HttpMethod.GET, "/api/users/*/certificates/*/download").permitAll()
 
                         //userproject
                         .requestMatchers(HttpMethod.PUT, "/api/user-projects/users/{userId}/projects/*").hasAuthority("MENTOR")
                         .requestMatchers(HttpMethod.POST, "/api/user-projects").hasAuthority("MENTOR")
-                        .requestMatchers(HttpMethod.GET, "/api/user-projects/user/*").hasAnyAuthority("ADMIN", "MENTOR")
+                        .requestMatchers(HttpMethod.GET, "/api/user-projects/users/*").hasAnyAuthority("ADMIN", "MENTOR")
 //                        .requestMatchers(HttpMethod.GET, "/api/user-projects/user").hasAuthority("STUDENT")
 
                         //userbadges

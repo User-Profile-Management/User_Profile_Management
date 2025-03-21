@@ -33,6 +33,13 @@ public class UserService implements UserDetailsService {
         this.passwordEncoder = passwordEncoder;
     }
 
+    public List<User> getActiveUsersByRole(String roleName) {
+        Role role = roleService.getRoleByName(roleName); // Fetch Role entity
+        return userRepository.findByRoleAndStatus(role, User.Status.ACTIVE);
+    }
+
+
+
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         Optional<User> userOptional = userRepository.findByEmailAndDeletedAtIsNull(username);
@@ -59,7 +66,7 @@ public class UserService implements UserDetailsService {
         Role role = roleService.assignRole(roleName);
         user.setRole(role);
         user.setProfilePicture(null);
-        user.setStatus(User.Status.INACTIVE);
+        user.setStatus(User.Status.PENDING);
         user.setUserId(generateUserId(role));
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         return userRepository.save(user);
@@ -114,9 +121,7 @@ public class UserService implements UserDetailsService {
         return userRepository.findAllByDeletedAtIsNull(); // Fetch only non-deleted users
     }
 
-    public List<User> getActiveUsersByRole(String roleName) {
-        return userRepository.findByRoleAndStatus(roleName, User.Status.ACTIVE);
-    }
+
 
     public Long getActiveStudentCount() {
         return userRepository.countByRoleAndStatus("STUDENT", User.Status.ACTIVE);
@@ -199,5 +204,67 @@ public class UserService implements UserDetailsService {
         }
         return false;
     }
+
+    public Long getActiveUserCount(String role) {
+        return userRepository.countByRoleAndStatus(role, User.Status.ACTIVE);
+    }
+
+    public List<User> getPendingApprovalUsersByRole(String role) {
+        return userRepository.findByRoleAndStatus(role, User.Status.PENDING);
+    }
+
+    public List<User> getUsersByRoleAndStatus(String roleName, String status) {
+        Role role = null;
+        if (roleName != null) {
+            roleName = roleName.toUpperCase();
+            role = roleService.getRoleByName(roleName); // Fetch Role entity
+        }
+
+        // Convert status String to User.Status Enum
+        User.Status statusEnum = null;
+        if (status != null) {
+            try {
+                statusEnum = User.Status.valueOf(status.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException("Invalid status value: " + status);
+            }
+        }
+
+        // Fetch users based on role and status filters
+        if (role != null && statusEnum != null) {
+            return userRepository.findByRoleAndStatus(role, statusEnum);
+        } else if (role != null) {
+            return userRepository.findByRole(role);
+        } else if (statusEnum != null) {
+            return userRepository.findByStatus(statusEnum);
+        } else {
+            return userRepository.findAll();
+        }
+    }
+
+
+    public void restoreUser(String userId) {
+        Optional<User> userOptional = userRepository.findByIdIncludingDeleted(userId); // Fetch deleted users
+
+        if (userOptional.isEmpty()) {
+            throw new RuntimeException("User not found with ID: " + userId);
+        }
+
+        User user = userOptional.get();
+
+        if (user.getDeletedAt() == null) {
+            throw new RuntimeException("User is already active.");
+        }
+
+        user.setDeletedAt(null); // Restore user
+        userRepository.save(user);
+    }
+
+
+
+
+
+
+
 
 }

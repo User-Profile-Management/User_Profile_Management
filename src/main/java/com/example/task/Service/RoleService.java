@@ -32,9 +32,9 @@ public class RoleService {
     }
 
 
-    public Role getRoleByName(String roleName) {
-        return roleRepository.findByRoleName(roleName);
-    }
+//    public Role getRoleByName(String roleName) {
+//        return roleRepository.findByRoleName(roleName);
+//    }
 
 
     public List<Role> getAllRoles() {
@@ -44,6 +44,10 @@ public class RoleService {
 
     public Role createRole(Role role) {
         return roleRepository.save(role);
+    }
+    public Role getRoleByName(String roleName) {
+        return roleRepository.findByRoleNameIgnoreCase(roleName)
+                .orElseThrow(() -> new RuntimeException("Role not found: " + roleName));
     }
 
 }

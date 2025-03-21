@@ -32,7 +32,7 @@ public class UserProjectController {
         return ResponseEntity.ok(new ApiResponse(200, "Fetched all user projects", userProjects,null));
     }
 
-    @GetMapping("/user/{studentId}")
+    @GetMapping("/users/{studentId}")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'MENTOR') or #studentId == authentication.principal.id")
     public ResponseEntity<ApiResponse> getAssignedProjects(@PathVariable String studentId, Authentication authentication) {
         List<Project> projects = userProjectService.getAssignedProjects(studentId);
