@@ -82,7 +82,13 @@ public class ProjectService {
         projectRepository.save(project);
     }
 
+    public Project getProjectById(Integer projectId) {
+        return projectRepository.findById(projectId).orElse(null);
+    }
 
+    public boolean isMentorAssignedToProject(String mentorId, Integer projectId) {
+        return projectRepository.existsByMentorUserIdAndProjectId(mentorId, projectId);
+    }
 
 
 
@@ -123,7 +129,6 @@ public class ProjectService {
         project = projectRepository.save(project);
         return projectMapper.toDTO(project);
     }
-
 
     public void deleteUserProject(String userId, Integer projectId) {
         Optional<User> userOptional = userRepository.findById(userId);

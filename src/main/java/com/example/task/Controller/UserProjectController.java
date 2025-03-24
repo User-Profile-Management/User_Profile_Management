@@ -6,6 +6,7 @@ import com.example.task.Entity.Project;
 import com.example.task.Entity.UserProject;
 import com.example.task.Repository.ProjectRepository;
 import com.example.task.Repository.UserProjectRepository;
+import com.example.task.Service.ProjectService;
 import com.example.task.Service.UserProjectService;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
@@ -27,11 +28,13 @@ import java.util.List;
 public class UserProjectController {
     private final UserProjectService userProjectService;
     private final ProjectRepository projectRepository;
+    private final ProjectService projectService;
 
     @Autowired
-    public UserProjectController(UserProjectService userProjectService,ProjectRepository projectRepository) {
+    public UserProjectController(UserProjectService userProjectService,ProjectRepository projectRepository,ProjectService projectService) {
         this.userProjectService = userProjectService;
         this.projectRepository = projectRepository;
+        this.projectService = projectService;
     }
 
     @GetMapping
@@ -80,15 +83,31 @@ public class UserProjectController {
     @PreAuthorize("hasAuthority('MENTOR')")
     public ResponseEntity<ApiResponse<UserProjectDTO>> addUserProject(@RequestBody UserProject userProject) {
         var auth = SecurityContextHolder.getContext().getAuthentication();
-        System.out.println("User Roles: " + auth.getAuthorities()); // Debugging line
+        String mentorId = auth.getName();  // Extract mentor ID from authentication
+        System.out.println("User Roles: " + auth.getAuthorities());
 
+        // Step 1: Check if the project exists
+        Project project = projectService.getProjectById(userProject.getProjectId());
+        if (project == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ApiResponse<>(404, "Project not found", null, "The specified project does not exist"));
+        }
 
+        // Step 2: Check if the mentor is assigned to the project
+        boolean isMentorAssigned = projectService.isMentorAssignedToProject(mentorId, userProject.getProjectId());
+        if (!isMentorAssigned) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(new ApiResponse<>(403, "Access Denied", null, "Mentor is not assigned to this project"));
+        }
+
+        // Step 3: Proceed with adding the user to the project
         UserProjectDTO createdUserProject = userProjectService.addUserProject(userProject);
 
-
-        return ResponseEntity.status(201)
+        return ResponseEntity.status(HttpStatus.CREATED)
                 .body(new ApiResponse<>(201, "User project added successfully", createdUserProject, null));
     }
+
+
 }
 
 
