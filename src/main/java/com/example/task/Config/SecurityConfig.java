@@ -76,9 +76,9 @@ public class SecurityConfig {
 
                         // Certificate endpoints
 
-                        .requestMatchers(HttpMethod.POST, "/api/users/*/certificates").hasAuthority("STUDENT")
+                        .requestMatchers(HttpMethod.POST, "/api/users/certificates").hasAuthority("STUDENT")
                         .requestMatchers(HttpMethod.GET, "/api/users/*/certificates").permitAll()
-                        .requestMatchers(HttpMethod.DELETE, "/api/users/*/certificates/*").hasAuthority("STUDENT")
+                        .requestMatchers(HttpMethod.DELETE, "/api/users/certificates/*").hasAuthority("STUDENT")
                         .requestMatchers(HttpMethod.GET, "/api/users/*/certificates/*/download").permitAll()
 
                         //userproject
@@ -90,6 +90,7 @@ public class SecurityConfig {
                         //userbadges
 
                                 .requestMatchers(HttpMethod.POST, "/api/badges/userbadges").hasAuthority("MENTOR")
+                                .requestMatchers(HttpMethod.GET, "/api/badges/userbadges/*").hasAuthority("STUDENT")
 
                         //All other requests need authentication
                         .anyRequest().authenticated()

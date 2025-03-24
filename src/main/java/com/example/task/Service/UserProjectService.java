@@ -1,8 +1,12 @@
 package com.example.task.Service;
 
+import com.example.task.DTO.ProfileDTO;
+import com.example.task.DTO.ProjectDTO;
+import com.example.task.DTO.UserProjectDTO;
 import com.example.task.Entity.User;
 import com.example.task.Entity.Project;
 import com.example.task.Entity.UserProject;
+import com.example.task.Mapper.UserProjectMapper;
 import com.example.task.Repository.UserProjectRepository;
 import com.example.task.Repository.UserRepository;
 import com.example.task.Repository.ProjectRepository;
@@ -18,15 +22,17 @@ import java.util.Optional;
 public class UserProjectService {
     private final UserProjectRepository userProjectRepository;
     private final UserRepository userRepository;
-    private final ProjectRepository projectRepository; // ✅ FIXED: Added missing repository
+    private final ProjectRepository projectRepository;
+    private final UserProjectMapper userProjectMapper;// ✅ FIXED: Added missing repository
 
     @Autowired
     public UserProjectService(UserProjectRepository userProjectRepository,
                               UserRepository userRepository,
-                              ProjectRepository projectRepository) {
+                              ProjectRepository projectRepository,UserProjectMapper userProjectMapper) {
         this.userProjectRepository = userProjectRepository;
         this.userRepository = userRepository;
-        this.projectRepository = projectRepository; // ✅ FIXED: Corrected duplicate repository
+        this.projectRepository = projectRepository; // FIXED: Corrected duplicate repository
+        this.userProjectMapper = userProjectMapper;
     }
 
     public List<UserProject> getAllUserProjects() {
@@ -45,7 +51,7 @@ public class UserProjectService {
                 .orElseThrow(() -> new RuntimeException("Project not found"));
     }
 
-    public UserProject addUserProject(UserProject userProject) {
+    public UserProjectDTO addUserProject(UserProject userProject) {
         // Fetch user
         User user = userRepository.findById(userProject.getUserId())
                 .orElseThrow(() -> new RuntimeException("User not found: " + userProject.getUserId()));
@@ -74,11 +80,18 @@ public class UserProjectService {
         userProject.setProject(project);
 
         try {
-            return userProjectRepository.save(userProject);
+            userProject.setUserId(user.getUserId());
+            userProject.setProjectId(project.getProjectId());
+
+            UserProject savedUserProject = userProjectRepository.save(userProject);
+
+            // Use the mapper for conversion
+            return UserProjectMapper.mapToUserProjectDTO(savedUserProject);
         } catch (Exception e) {
             throw new RuntimeException("Error saving UserProject: " + e.getMessage(), e);
         }
     }
+
 
 
 

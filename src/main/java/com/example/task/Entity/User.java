@@ -1,5 +1,6 @@
 package com.example.task.Entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -39,7 +40,7 @@ public class User {
     @Column(name = "date_of_birth")
     private LocalDate dateOfBirth;
 
-    @Column(name = "contact_no")
+    @Column(name = "contact_no", unique = true)
     private String contactNo;
 
     @Column(name = "address")
@@ -50,6 +51,7 @@ public class User {
     private Status status = Status.ACTIVE;
 
     @Column(name = "password", nullable = false)
+    @JsonIgnore
     private String password;
 
     @Column(nullable = true)

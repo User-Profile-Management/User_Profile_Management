@@ -1,5 +1,6 @@
 package com.example.task.Entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -25,6 +26,7 @@ public class Badge {
     private byte[] image;
 
     @OneToMany(mappedBy = "badge")
+    @JsonIgnore
     private List<UserBadge> userBadge;
 
     public Badge( String name, byte[] image) {

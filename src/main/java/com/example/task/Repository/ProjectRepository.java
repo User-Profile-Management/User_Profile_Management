@@ -30,8 +30,10 @@ public interface ProjectRepository extends JpaRepository<Project, Integer> {
 
     // Fetch only active projects for a mentor
     List<Project> findByMentorAndDeletedAtIsNull(User mentor);
+    boolean existsByProjectName(String projectName);
 
 
     Optional<Project> findByProjectNameAndMentor(String projectName, User mentor);
+    Optional<Project> findByProjectName(String projectName);
 
 }

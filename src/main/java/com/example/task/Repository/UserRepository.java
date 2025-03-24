@@ -39,6 +39,7 @@ public interface UserRepository extends JpaRepository<User, String> {
 
 
 
+
     @Query("SELECT COUNT(u) FROM User u WHERE UPPER(u.role.roleName) = UPPER(:roleName) AND u.status = :status")
     Long countByRoleAndStatus(@Param("roleName") String roleName, @Param("status") User.Status status);
 
@@ -57,4 +58,9 @@ public interface UserRepository extends JpaRepository<User, String> {
     List<User> findByRole(Role role);
     List<User> findByStatus(User.Status status);
 
+    User findByUserId(String loggedInUserId);
+
+    boolean existsByEmail(String email);
+
+    boolean existsByContactNo(String contactNo);
 }

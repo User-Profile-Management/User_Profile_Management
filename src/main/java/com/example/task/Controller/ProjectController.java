@@ -11,6 +11,8 @@ import com.example.task.Service.ProjectService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -45,20 +47,20 @@ public class ProjectController {
         }
     }
 
-    // Edit project
     @PreAuthorize("hasAnyAuthority('MENTOR', 'ADMIN')")
     @PutMapping("/{projectId}")
     public ResponseEntity<ApiResponse<ProjectDTO>> updateProject(
             @PathVariable Integer projectId,
-            @RequestBody ProjectDTO projectDTO) {
-        try {
-            // Fetch the project to check its deletedAt status
-            ProjectDTO existingProject = projectService.getProjectByProjectId(projectId);
+            @RequestBody ProjectDTO projectDTO,
+            @AuthenticationPrincipal UserDetails authenticatedUser) {
 
-            if (existingProject == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(new ApiResponse<>(404, "Project not found", null, null));
-            }
+        try {
+            // Get the logged-in user's details
+            String loggedInUserId = authenticatedUser.getUsername(); // Assuming userId is the username
+
+            // Fetch the project from the repository
+            Project existingProject = projectRepository.findById(projectId)
+                    .orElseThrow(() -> new RuntimeException("Project not found with ID: " + projectId));
 
             // Check if the project is soft deleted
             if (existingProject.getDeletedAt() != null) {
@@ -66,8 +68,19 @@ public class ProjectController {
                         .body(new ApiResponse<>(400, "Project is deleted and cannot be updated", null, null));
             }
 
+            // Get logged-in user's role
+            User loggedInUser = userRepository.findByUserId(loggedInUserId);
+            boolean isAdmin = loggedInUser.getRole().getRoleName().equalsIgnoreCase("ADMIN");
+
+            // If the user is a mentor, ensure they own the project
+            if (!isAdmin && !existingProject.getMentor().getUserId().equals(loggedInUserId)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(new ApiResponse<>(403, "You do not have permission to update this project.", null, "Access Denied"));
+            }
+
             // Proceed with updating the project
-            ProjectDTO updatedProject = projectService.updateProject(projectId, projectDTO);
+            ProjectDTO updatedProject = projectService.updateProject(projectId, projectDTO, authenticatedUser);
+
             return ResponseEntity.ok(new ApiResponse<>(200, "Project updated successfully", updatedProject, null));
 
         } catch (Exception e) {
@@ -75,33 +88,22 @@ public class ProjectController {
                     .body(new ApiResponse<>(500, "Error updating project: " + e.getMessage(), null, e.getMessage()));
         }
     }
-//delete a project from the project list
+
     @PreAuthorize("hasAuthority('ADMIN')")
     @DeleteMapping("/{projectId}")
     public ResponseEntity<ApiResponse<String>> deleteProject(@PathVariable Integer projectId) {
         try {
-            Optional<Project> projectOptional = projectRepository.findById(projectId);
-
-            if (projectOptional.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(new ApiResponse<>(404, "Project not found with ID: " + projectId, null, "Project not found"));
-            }
-
-            Project project = projectOptional.get();
-
-            if (project.getDeletedAt() != null) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body(new ApiResponse<>(400, "Project is already deleted.", null, "Project already deleted"));
-            }
-
-            projectService.deleteProject(projectId);
+            projectService.deleteProject(projectId); // Service method handles validation
             return ResponseEntity.ok(new ApiResponse<>(200, "Project deleted successfully.", null, null));
-
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ApiResponse<>(404, e.getMessage(), null, "Project not found"));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse<>(500, "Error deleting project: " + e.getMessage(), null, e.getMessage()));
         }
     }
+
 
 
 

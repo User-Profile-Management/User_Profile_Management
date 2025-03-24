@@ -14,7 +14,7 @@ public class ProjectMapper {
                 .projectId(project.getProjectId())
                 .projectName(project.getProjectName())
                 .description(project.getDescription())
-                .mentorId(project.getMentor() != null ? project.getMentor().getUserId() : null) // Store only mentor ID
+                .mentorId(project.getMentor() != null ? project.getMentor().getUserId() : null) // Use getMentor() for entity
                 .build();
     }
 

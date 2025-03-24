@@ -8,6 +8,7 @@ import com.example.task.Repository.ProjectRepository;
 import com.example.task.Repository.UserProjectRepository;
 import com.example.task.Repository.UserRepository;
 import jakarta.transaction.Transactional;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -50,17 +51,29 @@ public class ProjectService {
     }
 
 
-    // Edit a project
-    public ProjectDTO updateProject(Integer projectId, ProjectDTO projectDTO) {
-        Optional<Project> projectOptional = projectRepository.findById(projectId);
-        if (!projectOptional.isPresent()) {
-            throw new RuntimeException("Project not found with ID: " + projectId);
+    public ProjectDTO updateProject(Integer projectId, ProjectDTO projectDTO, UserDetails authenticatedUser) {
+        // Get logged-in user's email from the token
+        String loggedInUserEmail = authenticatedUser.getUsername();  // Assuming email is stored as username
+
+        // Fetch the logged-in user
+        User loggedInUser = userRepository.findByEmail(loggedInUserEmail)
+                .orElseThrow(() -> new RuntimeException("Authenticated user not found"));
+
+        // Fetch the project
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new RuntimeException("Project not found with ID: " + projectId));
+
+        // Check if the user is an ADMIN (Admins can update any project)
+        boolean isAdmin = loggedInUser.getRole().getRoleName().equalsIgnoreCase("ADMIN");
+
+        // Ensure the mentor updating the project is the assigned mentor
+        if (!isAdmin && !project.getMentor().getUserId().equals(loggedInUser.getUserId())) {
+            throw new RuntimeException("You do not have permission to update this project.");
         }
 
-        Project project = projectOptional.get();
+        // Proceed with updating project details
         project.setProjectName(projectDTO.getProjectName());
         project.setDescription(projectDTO.getDescription());
-
 
         projectRepository.save(project);
         return projectMapper.toDTO(project);
@@ -68,21 +81,19 @@ public class ProjectService {
 
     // Delete a project
     public void deleteProject(Integer projectId) {
-        Optional<Project> projectOptional = projectRepository.findById(projectId);
-
-        if (projectOptional.isEmpty()) {
-            throw new RuntimeException("Project not found with ID: " + projectId);
-        }
-
-        Project project = projectOptional.get();
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new RuntimeException("Project not found with ID: " + projectId));
 
         if (project.getDeletedAt() != null) {
             throw new RuntimeException("Project is already deleted.");
         }
 
-        project.setDeletedAt(LocalDateTime.now()); // Mark project as deleted
+        // Soft delete by setting the deleted timestamp
+        project.setDeletedAt(LocalDateTime.now());
         projectRepository.save(project);
     }
+
+
 
 //    // Get ongoing project count
 //    public Integer getOngoingProjectCount() {
@@ -113,15 +124,17 @@ public class ProjectService {
     }
 
 
-    // Add a project for a user
     public ProjectDTO addUserProject(String userId, ProjectDTO projectDTO) {
         Optional<User> userOptional = userRepository.findById(userId);
-        if (!userOptional.isPresent()) {
-            throw new RuntimeException("User not found with ID: " + userId);
-        }
+        User user = userOptional.orElseThrow(() ->
+                new RuntimeException("User not found with ID: " + userId)
+        );
 
-        Project project = projectMapper.toEntity(projectDTO, userOptional.get());
-        project.setMentor(userOptional.get()); // Assign mentor
+        Project project = projectMapper.toEntity(projectDTO, user);
+
+        // ✅ FIX: Use setMentor(user) instead of setMentorId(user.getUserId())
+        project.setMentor(user);
+
         project = projectRepository.save(project);
         return projectMapper.toDTO(project);
     }
@@ -172,19 +185,19 @@ public class ProjectService {
         List<Project> projects = projectRepository.findByDeletedAtIsNull();
         return projects.stream().map(projectMapper::toDTO).collect(Collectors.toList());
     }
+
     @Transactional
     public ProjectDTO createProject(ProjectDTO projectDTO) {
+        // Check if a project with the same name already exists across all mentors
+        boolean projectExists = projectRepository.existsByProjectName(projectDTO.getProjectName());
+
+        if (projectExists) {
+            throw new RuntimeException("Project with name '" + projectDTO.getProjectName() + "' already exists.");
+        }
+
         // Fetch the mentor using the mentorId
         User mentor = userRepository.findById(projectDTO.getMentorId())
                 .orElseThrow(() -> new RuntimeException("Mentor not found with ID: " + projectDTO.getMentorId()));
-
-        // Check if a project with the same name already exists for this mentor
-        Optional<Project> existingProject = projectRepository.findByProjectNameAndMentor(
-                projectDTO.getProjectName(), mentor);
-
-        if (existingProject.isPresent()) {
-            throw new RuntimeException("Project with name '" + projectDTO.getProjectName() + "' already exists for this mentor.");
-        }
 
         // Convert DTO to Entity with the fetched mentor
         Project project = projectMapper.toEntity(projectDTO, mentor);
@@ -195,6 +208,7 @@ public class ProjectService {
         // Return the saved project as a DTO
         return projectMapper.toDTO(project);
     }
+
 
 
 

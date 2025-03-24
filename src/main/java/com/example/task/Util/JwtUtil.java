@@ -26,7 +26,7 @@ public class JwtUtil {
 
         return Jwts.builder()
                 .setSubject(userDetails.getUsername())
-                .claim("roles", roles)  // 🔥 Include roles in the token
+                .claim("roles", roles)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)) // 10 hours
                 .signWith(SignatureAlgorithm.HS256, secretKey)

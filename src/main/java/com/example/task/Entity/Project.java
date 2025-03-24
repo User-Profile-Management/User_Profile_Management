@@ -1,5 +1,6 @@
 package com.example.task.Entity;
 
+import com.example.task.DTO.ProfileDTO;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -33,5 +34,7 @@ public class Project {
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
+
+
 
 }

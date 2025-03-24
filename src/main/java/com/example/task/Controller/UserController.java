@@ -4,6 +4,7 @@ import com.example.task.DTO.ApiResponse;
 import com.example.task.DTO.ProfileDTO;
 import com.example.task.DTO.RegisterUserDTO;
 import com.example.task.Entity.User;
+import com.example.task.Repository.UserRepository;
 import com.example.task.Service.UserService;
 import com.example.task.Util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,11 +29,13 @@ public class UserController {
 
     private final UserService userService;
     private final JwtUtil jwtUtil;
+    private final UserRepository userRepository;
 
     @Autowired
-    public UserController(UserService userService, JwtUtil jwtUtil) {
+    public UserController(UserService userService, JwtUtil jwtUtil,UserRepository userRepository) {
         this.userService = userService;
         this.jwtUtil = jwtUtil;
+        this.userRepository = userRepository;
     }
 
     @PostMapping("/users/register")
@@ -64,6 +67,17 @@ public class UserController {
             }
             if (userDTO.getEmergencyContact() != null && !userDTO.getEmergencyContact().matches("\\d{10}")) {
                 return ResponseEntity.badRequest().body(new ApiResponse<>(400, "Emergency Contact Number must be exactly 10 digits.", null, "Invalid Emergency Contact format."));
+            }
+            // Check if the email already exists
+            if (userRepository.existsByEmail(userDTO.getEmail())) {
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                        .body(new ApiResponse<>(409, "Email is already registered.", null, "Duplicate Email"));
+            }
+
+            // Check if the contact number already exists
+            if (userRepository.existsByContactNo(userDTO.getContactNo())) {
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                        .body(new ApiResponse<>(409, "Contact number is already registered.", null, "Duplicate Contact Number"));
             }
 
             User user = new User();
@@ -206,41 +220,158 @@ public class UserController {
 
 
     //done
-    @PutMapping("/users/{userId}/status")
-    public ResponseEntity<ApiResponse<String>> updateUserStatus(
+//    @PutMapping("/users/{userId}/status")
+//    public ResponseEntity<ApiResponse<String>> updateUserStatus(
+//            @PathVariable String userId,
+//            @RequestBody Map<String, String> request) {
+//        try {
+//            String status = request.get("status"); // Extract status from JSON
+//
+//            if (status == null || status.trim().isEmpty()) {
+//                return ResponseEntity.badRequest().body(
+//                        new ApiResponse<>(400, "Status is required.", null, "Status is empty or invalid.")
+//                );
+//            }
+//
+//            User user = userService.getUserById(userId)
+//                    .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+//
+//            // Convert string to enum safely
+//            try {
+//                user.setStatus(User.Status.valueOf(status.toUpperCase()));
+//            } catch (IllegalArgumentException e) {
+//                return ResponseEntity.badRequest().body(
+//                        new ApiResponse<>(400, "Invalid status value.", null, "Invalid status provided.")
+//                );
+//            }
+//
+//            user.setUpdatedAt(LocalDateTime.now());
+//            userService.saveUser(user);
+//
+//            return ResponseEntity.ok(new ApiResponse<>(200, "User status updated successfully.", null, null));
+//        } catch (RuntimeException e) {
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+//                    new ApiResponse<>(500, "Error updating user status: " + e.getMessage(), null, e.getMessage())
+//            );
+//        }
+//    }
+
+
+    @PutMapping("/users/{userId}")
+    public ResponseEntity<ApiResponse<String>> updateUser(
             @PathVariable String userId,
             @RequestBody Map<String, String> request) {
         try {
-            String status = request.get("status"); // Extract status from JSON
-
-            if (status == null || status.trim().isEmpty()) {
-                return ResponseEntity.badRequest().body(
-                        new ApiResponse<>(400, "Status is required.", null, "Status is empty or invalid.")
-                );
-            }
-
+            // Fetch the user
             User user = userService.getUserById(userId)
                     .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
 
-            // Convert string to enum safely
-            try {
-                user.setStatus(User.Status.valueOf(status.toUpperCase()));
-            } catch (IllegalArgumentException e) {
-                return ResponseEntity.badRequest().body(
-                        new ApiResponse<>(400, "Invalid status value.", null, "Invalid status provided.")
+            boolean isSoftDeleted = user.getDeletedAt() != null;
+            boolean isPendingOrRejected = user.getStatus() == User.Status.PENDING || user.getStatus() == User.Status.REJECTED;
+
+            // ❌ If user is soft-deleted, no updates are allowed
+            if (isSoftDeleted) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                        new ApiResponse<>(403, "Cannot update a deleted user.", null, "User is soft-deleted.")
                 );
+            }
+
+            // ✅ Allow status change for PENDING/REJECTED users, but nothing else
+            if (isPendingOrRejected && request.containsKey("status") && request.size() == 1) {
+                String status = request.get("status");
+
+                if (status == null || status.trim().isEmpty()) {
+                    return ResponseEntity.badRequest().body(
+                            new ApiResponse<>(400, "Status is required.", null, "Status is empty or invalid.")
+                    );
+                }
+
+                try {
+                    User.Status newStatus = User.Status.valueOf(status.toUpperCase());
+                    if (newStatus == User.Status.PENDING || newStatus == User.Status.REJECTED) {
+                        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                                new ApiResponse<>(403, "Cannot set status to PENDING or REJECTED.", null, "Invalid status change.")
+                        );
+                    }
+                    user.setStatus(newStatus);
+                    user.setUpdatedAt(LocalDateTime.now());
+                    userService.saveUser(user);
+
+                    return ResponseEntity.ok(new ApiResponse<>(200, "User status updated successfully.", null, null));
+                } catch (IllegalArgumentException e) {
+                    return ResponseEntity.badRequest().body(
+                            new ApiResponse<>(400, "Invalid status value.", null, "Invalid status provided.")
+                    );
+                }
+            }
+
+            // ❌ If PENDING/REJECTED user tries to update other fields, reject
+            if (isPendingOrRejected) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                        new ApiResponse<>(403, "Only status can be updated for users with PENDING or REJECTED status.", null, "Update restricted.")
+                );
+            }
+
+            // ✅ If ACTIVE/INACTIVE, allow full updates
+            if (request.containsKey("status")) {
+                String status = request.get("status");
+                if (status == null || status.trim().isEmpty()) {
+                    return ResponseEntity.badRequest().body(
+                            new ApiResponse<>(400, "Status is required.", null, "Status is empty or invalid.")
+                    );
+                }
+
+                try {
+                    User.Status newStatus = User.Status.valueOf(status.toUpperCase());
+                    if (newStatus == User.Status.PENDING || newStatus == User.Status.REJECTED) {
+                        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                                new ApiResponse<>(403, "Cannot set status to PENDING or REJECTED.", null, "Invalid status change.")
+                        );
+                    }
+                    user.setStatus(newStatus);
+                } catch (IllegalArgumentException e) {
+                    return ResponseEntity.badRequest().body(
+                            new ApiResponse<>(400, "Invalid status value.", null, "Invalid status provided.")
+                    );
+                }
+            }
+
+            // ✅ Update other details if provided
+            if (request.containsKey("fullName")) {
+                user.setFullName(request.get("fullName"));
+            }
+
+            if (request.containsKey("email")) {
+                String newEmail = request.get("email");
+                if (!newEmail.equals(user.getEmail()) && userRepository.existsByEmail(newEmail)) {
+                    return ResponseEntity.status(HttpStatus.CONFLICT)
+                            .body(new ApiResponse<>(409, "Email is already registered.", null, "Duplicate Email"));
+                }
+                user.setEmail(newEmail);
+            }
+
+            if (request.containsKey("contactNo")) {
+                String newContactNo = request.get("contactNo");
+                if (!newContactNo.equals(user.getContactNo()) && userRepository.existsByContactNo(newContactNo)) {
+                    return ResponseEntity.status(HttpStatus.CONFLICT)
+                            .body(new ApiResponse<>(409, "Contact number is already registered.", null, "Duplicate Contact Number"));
+                }
+                user.setContactNo(newContactNo);
             }
 
             user.setUpdatedAt(LocalDateTime.now());
             userService.saveUser(user);
 
-            return ResponseEntity.ok(new ApiResponse<>(200, "User status updated successfully.", null, null));
+            return ResponseEntity.ok(new ApiResponse<>(200, "User details updated successfully.", null, null));
+
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-                    new ApiResponse<>(500, "Error updating user status: " + e.getMessage(), null, e.getMessage())
+                    new ApiResponse<>(500, "Error updating user details: " + e.getMessage(), null, e.getMessage())
             );
         }
     }
+
+
 
     @PutMapping("/users/profile")
     @PreAuthorize("hasAnyAuthority('MENTOR', 'STUDENT')")
@@ -290,11 +421,23 @@ public class UserController {
 
 
     @PutMapping("/users/update-password")
-    public ResponseEntity<ApiResponse<String>> updatePassword(@RequestParam String email,
-                                                              @RequestParam String oldPassword,
-                                                              @RequestParam String newPassword) {
+    public ResponseEntity<ApiResponse<String>> updatePassword(@RequestBody Map<String, String> request) {
         try {
+            // Get authenticated user's email
+            String email = getAuthenticatedEmail();
+
+            // Extract old and new password from request body
+            String oldPassword = request.get("oldPassword");
+            String newPassword = request.get("newPassword");
+
+            // Validate input
+            if (oldPassword == null || newPassword == null || oldPassword.isBlank() || newPassword.isBlank()) {
+                return ResponseEntity.badRequest().body(new ApiResponse<>(400, "Missing required fields", null, "Old or new password is missing."));
+            }
+
+            // Call service to update password
             boolean success = userService.updatePassword(email, oldPassword, newPassword);
+
             if (success) {
                 return ResponseEntity.ok(new ApiResponse<>(200, "Password updated successfully.", null, null));
             } else {
@@ -304,4 +447,15 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>(500, "Error updating password", null, e.getMessage()));
         }
     }
+    private String getAuthenticatedEmail() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new RuntimeException("User is not authenticated");
+        }
+
+        return authentication.getName(); // Extract email from the token
+    }
+
+
 }

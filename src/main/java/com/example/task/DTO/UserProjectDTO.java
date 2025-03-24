@@ -8,7 +8,7 @@ import lombok.*;
 @NoArgsConstructor
 public class UserProjectDTO {
     private int id;
-    private String userId;
-    private int projectId;
+    private ProfileDTO profile;  // ✅ ProfileDTO matches what is passed in constructor
+    private ProjectDTO project;  // ✅ ProjectDTO matches what is passed in constructor
     private String status;
 }

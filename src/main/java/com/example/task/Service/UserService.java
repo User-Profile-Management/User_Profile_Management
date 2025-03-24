@@ -194,16 +194,22 @@ public class UserService implements UserDetailsService {
 
     public boolean updatePassword(String email, String oldPassword, String newPassword) {
         Optional<User> userOptional = userRepository.findByEmailAndDeletedAtIsNull(email);
+
         if (userOptional.isPresent()) {
             User user = userOptional.get();
+
+            // Verify old password
             if (passwordEncoder.matches(oldPassword, user.getPassword())) {
-                user.setPassword(passwordEncoder.encode(newPassword));
+                user.setPassword(passwordEncoder.encode(newPassword)); // Encode new password
                 userRepository.save(user);
                 return true;
+            } else {
+                throw new RuntimeException("Incorrect old password.");
             }
         }
-        return false;
+        throw new RuntimeException("User not found.");
     }
+
 
     public Long getActiveUserCount(String role) {
         return userRepository.countByRoleAndStatus(role, User.Status.ACTIVE);
