@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 @Component
 public class JwtUtil {
 
-    @Value("${jwt.secret}")  // Fetch the secret key from application.properties
+    @Value("${jwt.secret}")
     private String secretKey;
 
     public String generateToken(UserDetails userDetails) {
@@ -63,7 +63,7 @@ public class JwtUtil {
                 .setSigningKey(secretKey)
                 .parseClaimsJws(token)
                 .getBody();
-        return claims.get("roles", List.class);  //Extract roles properly
+        return claims.get("roles", List.class);
     }
 
 

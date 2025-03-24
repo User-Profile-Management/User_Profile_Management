@@ -23,7 +23,7 @@ public class UserProjectService {
     private final UserProjectRepository userProjectRepository;
     private final UserRepository userRepository;
     private final ProjectRepository projectRepository;
-    private final UserProjectMapper userProjectMapper;// ✅ FIXED: Added missing repository
+    private final UserProjectMapper userProjectMapper;
 
     @Autowired
     public UserProjectService(UserProjectRepository userProjectRepository,
@@ -31,7 +31,7 @@ public class UserProjectService {
                               ProjectRepository projectRepository,UserProjectMapper userProjectMapper) {
         this.userProjectRepository = userProjectRepository;
         this.userRepository = userRepository;
-        this.projectRepository = projectRepository; // FIXED: Corrected duplicate repository
+        this.projectRepository = projectRepository;
         this.userProjectMapper = userProjectMapper;
     }
 
@@ -46,36 +46,36 @@ public class UserProjectService {
     }
 
     public List<UserProject> getUsersByProjectId(int projectId) {
-        Optional<Project> project = projectRepository.findById(projectId); // ✅ FIXED
+        Optional<Project> project = projectRepository.findById(projectId);
         return project.map(userProjectRepository::findByProject)
                 .orElseThrow(() -> new RuntimeException("Project not found"));
     }
 
     public UserProjectDTO addUserProject(UserProject userProject) {
-        // Fetch user
+
         User user = userRepository.findById(userProject.getUserId())
                 .orElseThrow(() -> new RuntimeException("User not found: " + userProject.getUserId()));
 
-        // Ensure user is ACTIVE
+
         if (!"ACTIVE".equalsIgnoreCase(user.getStatus().name())) {
             throw new RuntimeException("User " + user.getUserId() + " is not active. Cannot assign project.");
         }
 
-        // Fetch project
+
         Project project = projectRepository.findById(userProject.getProjectId())
                 .orElseThrow(() -> new RuntimeException("Project not found: " + userProject.getProjectId()));
 
-        // Prevent duplicate assignment
+
         if (userProjectRepository.findByUserIdAndProjectId(user.getUserId(), project.getProjectId()).isPresent()) {
             throw new RuntimeException("User is already assigned to this project.");
         }
 
-        // Ensure status is not null
+
         if (userProject.getStatus() == null) {
             throw new RuntimeException("Project status cannot be null.");
         }
 
-        // Set associations
+
         userProject.setUser(user);
         userProject.setProject(project);
 
@@ -85,7 +85,7 @@ public class UserProjectService {
 
             UserProject savedUserProject = userProjectRepository.save(userProject);
 
-            // Use the mapper for conversion
+
             return UserProjectMapper.mapToUserProjectDTO(savedUserProject);
         } catch (Exception e) {
             throw new RuntimeException("Error saving UserProject: " + e.getMessage(), e);
@@ -98,7 +98,7 @@ public class UserProjectService {
 
 
     public List<Project> getAssignedProjects(String studentId) {
-        // Fetch only non-deleted projects assigned to the student
+
         return userProjectRepository.findProjectsByStudentId(studentId);
     }
     public void softDeleteUserProject(int userProjectId) {
@@ -123,7 +123,7 @@ public class UserProjectService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // 🔍 Debugging: Print user role before checking
+
         System.out.println("User role found: " + user.getRole().getRoleName());
 
 

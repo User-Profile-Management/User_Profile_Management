@@ -19,14 +19,14 @@ public interface UserRepository extends JpaRepository<User, String> {
     List<User> findByRoleAndStatus(@Param("roleName") String roleName, @Param("status") User.Status status);
 
 
-    // Override findById to exclude deleted users
+
     @Query("SELECT u FROM User u WHERE u.userId = :userId AND u.deletedAt IS NULL")
     Optional<User> findById(String userId);
     @Query("SELECT u FROM User u WHERE u.userId = :userId")
     Optional<User> findByIdIncludingDeleted(@Param("userId") String userId);
 
 
-    // Fetch user by email (for login) only if not deleted
+
     @Query("SELECT u FROM User u WHERE u.email = :email AND u.deletedAt IS NULL")
     Optional<User> findByEmail(String email);
 

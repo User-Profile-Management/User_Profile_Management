@@ -14,7 +14,7 @@ import java.util.Optional;
 @Repository
 public interface ProjectRepository extends JpaRepository<Project, Integer> {
 
-    // Find a project by its ID and Mentor (for user-specific project operations)
+
     Optional<Project> findByProjectIdAndMentor(Integer projectId, User mentor);
 
 
@@ -25,10 +25,10 @@ public interface ProjectRepository extends JpaRepository<Project, Integer> {
 
 
 
-    // Fetch only active projects
+
     List<Project> findByDeletedAtIsNull();
 
-    // Fetch only active projects for a mentor
+
     List<Project> findByMentorAndDeletedAtIsNull(User mentor);
     boolean existsByProjectName(String projectName);
 

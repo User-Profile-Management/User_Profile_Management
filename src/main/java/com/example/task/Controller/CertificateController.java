@@ -2,6 +2,7 @@ package com.example.task.Controller;
 
 import com.example.task.DTO.ApiResponse;
 import com.example.task.DTO.CertificateDTO;
+import com.example.task.Entity.User;
 import com.example.task.Repository.UserRepository;
 import com.example.task.Service.CertificateService;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 
 @RestController
@@ -26,14 +28,21 @@ public class CertificateController {
     private final UserRepository userRepository;
 
 
-
-    // Get all certificates for the authenticated user
-    @GetMapping
-    public ResponseEntity<List<CertificateDTO>> getCertificates() {
+    @GetMapping("/get")
+    @PreAuthorize("hasAuthority('STUDENT')")
+    public ResponseEntity<ApiResponse<List<CertificateDTO>>> getCertificates() {
         String userId = getAuthenticatedUserId();
         List<CertificateDTO> certificates = certificateService.getCertificatesByUserId(userId);
-        return certificates.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(certificates);
+
+        if (certificates.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NO_CONTENT)
+                    .body(new ApiResponse<>(204, "No certificates found", Collections.emptyList(), null));
+        }
+
+        return ResponseEntity.ok(new ApiResponse<>(200, "Certificates retrieved successfully", certificates, null));
     }
+
+
 
     private String getAuthenticatedUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -42,24 +51,12 @@ public class CertificateController {
         }
 
         String email = authentication.getName();
-        System.out.println("Extracted email from token: " + email);
-
-        return userRepository.findByEmail(email)
-                .map(user -> {
-                    System.out.println("User found: " + user.getUserId()); // Debug log
-                    return user.getUserId();
-                })
-                .orElseThrow(() -> {
-                    System.out.println("User not found for email: " + email);
-                    return new RuntimeException("User not found for email: " + email);
-                });
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found for email: " + email));
+        return user.getUserId();
     }
 
 
-
-
-
-    // Download a certificate PDF
     @GetMapping("/{certificateId}/download")
     public ResponseEntity<byte[]> downloadCertificate(@PathVariable Integer certificateId) {
         byte[] pdfData = certificateService.getCertificatePdfById(certificateId);
@@ -69,36 +66,59 @@ public class CertificateController {
                 .body(pdfData);
     }
 
-    //Add a certificate (Only for authenticated user)
-    @PostMapping(consumes = {"multipart/form-data"})
+
+    @PostMapping(path = "/certificates", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAuthority('STUDENT')")
-    public ResponseEntity<CertificateDTO> addCertificate(
-            @RequestParam String certificateName,
-            @RequestParam String issuedBy,
+    public ResponseEntity<ApiResponse<CertificateDTO>> addCertificate(
+            @RequestParam("certificateName") String certificateName,
+            @RequestParam("issuedBy") String issuedBy,
             @RequestParam("file") MultipartFile pdfFile) {
 
-        String userId = getAuthenticatedUserId();
         try {
-            CertificateDTO createdCertificate = certificateService.addCertificate(userId, certificateName, issuedBy, pdfFile);
-            return ResponseEntity.status(HttpStatus.CREATED).body(createdCertificate);
+
+            if (!pdfFile.getContentType().equalsIgnoreCase("application/pdf")) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(new ApiResponse<>(400, "Invalid file type", null, "Only PDF files are allowed"));
+            }
+
+
+            if (pdfFile.getSize() > 5 * 1024 * 1024) {
+                return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE)
+                        .body(new ApiResponse<>(413, "File too large", null, "Maximum file size is 5MB"));
+            }
+
+
+            String userId = getAuthenticatedUserId();
+
+
+            CertificateDTO response = certificateService.addCertificate(userId, certificateName, issuedBy, pdfFile);
+
+
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(new ApiResponse<>(201, "Certificate uploaded successfully", response, null));
+
         } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(500, "Error processing file", null, e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(400, e.getMessage(), null, e.getMessage()));
         }
     }
 
-    //Delete a certificate (Ensure the user owns it)
+
+
     @DeleteMapping("/{certificateId}")
     @PreAuthorize("hasAuthority('STUDENT')")
     public ResponseEntity<ApiResponse<String>> deleteCertificate(@PathVariable Integer certificateId) {
-        String userId = getAuthenticatedUserId();  // ✅ Fetch userId from token email
+        String userId = getAuthenticatedUserId();
 
         try {
             certificateService.deleteCertificateById(userId, certificateId);
-            ApiResponse<String> response = new ApiResponse<>(200, "Certificate deleted successfully", null, null);
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok(new ApiResponse<>(200, "Certificate deleted successfully", null, null));
         } catch (RuntimeException e) {
-            ApiResponse<String> errorResponse = new ApiResponse<>(HttpStatus.NOT_FOUND.value(), e.getMessage(), null, null);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ApiResponse<>(404, e.getMessage(), null, null));
         }
     }
 }

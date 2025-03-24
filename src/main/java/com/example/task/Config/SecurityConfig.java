@@ -76,10 +76,10 @@ public class SecurityConfig {
 
                         // Certificate endpoints
 
-                        .requestMatchers(HttpMethod.POST, "/api/users/certificates").hasAuthority("STUDENT")
-                        .requestMatchers(HttpMethod.GET, "/api/users/*/certificates").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/users/certificates/certificates").hasAuthority("STUDENT")
+                        .requestMatchers(HttpMethod.GET, "/api/users/certificates/get").hasAuthority("STUDENT")
                         .requestMatchers(HttpMethod.DELETE, "/api/users/certificates/*").hasAuthority("STUDENT")
-                        .requestMatchers(HttpMethod.GET, "/api/users/*/certificates/*/download").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/users/certificates/*/download").permitAll()
 
                         //userproject
                         .requestMatchers(HttpMethod.PUT, "/api/user-projects/users/{userId}/projects/*").hasAuthority("MENTOR")

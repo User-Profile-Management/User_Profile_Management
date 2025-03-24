@@ -32,9 +32,7 @@ public class RoleService {
     }
 
 
-//    public Role getRoleByName(String roleName) {
-//        return roleRepository.findByRoleName(roleName);
-//    }
+
 
 
     public List<Role> getAllRoles() {

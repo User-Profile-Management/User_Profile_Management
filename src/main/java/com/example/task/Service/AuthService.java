@@ -42,7 +42,7 @@ public class AuthService {
 
     public JWTResponse authenticateUser(LoginRequestDTO loginRequest) throws Exception {
         try {
-            // Authenticate the user
+
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword())
             );
@@ -52,7 +52,7 @@ public class AuthService {
             throw new DisabledException("User account is disabled");
         }
 
-        // Check if user is active
+
         Optional<User> userOptional = userRepository.findByEmail(loginRequest.getEmail());
         if (userOptional.isEmpty()) {
             throw new BadCredentialsException("User not found");
@@ -63,11 +63,11 @@ public class AuthService {
             throw new DisabledException("Your account is pending approval");
         }
 
-        // Generate JWT token
+
         UserDetails userDetails = userDetailsService.loadUserByUsername(loginRequest.getEmail());
         String token = jwtUtil.generateToken(userDetails);
 
-        //  Check and assign badge properly
+
         customUserDetailService.checkAndAssignBadge(user.getUserId());
 
         return new JWTResponse(token);

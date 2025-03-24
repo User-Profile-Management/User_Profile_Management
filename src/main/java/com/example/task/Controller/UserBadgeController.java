@@ -45,7 +45,7 @@ public class UserBadgeController {
     @GetMapping("/userbadges")
     @PreAuthorize("hasAuthority('STUDENT')")
     public ResponseEntity<ApiResponse<List<UserBadgeDTO>>> getUserBadges() {
-        // Extract user ID from the authenticated token
+
         String userId = getAuthenticatedUserId();
 
         List<UserBadgeDTO> userBadges = userBadgeService.getUserBadges(userId);
@@ -59,13 +59,13 @@ public class UserBadgeController {
             throw new RuntimeException("User is not authenticated");
         }
 
-        String email = authentication.getName(); // Get email from token
+        String email = authentication.getName();
 
-        // Fetch user from DB using email to get userId
+
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found for email: " + email));
 
-        return user.getUserId(); // Return userId instead of email
+        return user.getUserId();
     }
 
 }

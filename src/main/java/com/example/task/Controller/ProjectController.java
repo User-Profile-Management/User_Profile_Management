@@ -35,8 +35,7 @@ public class ProjectController {
     }
 
 
-    // Edit project for everyone
-    // Get a specific project by ID
+
     @GetMapping("/{projectId}")
     public ResponseEntity<ApiResponse<ProjectDTO>> getProjectById(@PathVariable Integer projectId) {
         ProjectDTO project = projectService.getProjectByProjectId(projectId);
@@ -55,30 +54,30 @@ public class ProjectController {
             @AuthenticationPrincipal UserDetails authenticatedUser) {
 
         try {
-            // Get the logged-in user's details
-            String loggedInUserId = authenticatedUser.getUsername(); // Assuming userId is the username
 
-            // Fetch the project from the repository
+            String loggedInUserId = authenticatedUser.getUsername();
+
+
             Project existingProject = projectRepository.findById(projectId)
                     .orElseThrow(() -> new RuntimeException("Project not found with ID: " + projectId));
 
-            // Check if the project is soft deleted
+
             if (existingProject.getDeletedAt() != null) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                         .body(new ApiResponse<>(400, "Project is deleted and cannot be updated", null, null));
             }
 
-            // Get logged-in user's role
+
             User loggedInUser = userRepository.findByUserId(loggedInUserId);
             boolean isAdmin = loggedInUser.getRole().getRoleName().equalsIgnoreCase("ADMIN");
 
-            // If the user is a mentor, ensure they own the project
+
             if (!isAdmin && !existingProject.getMentor().getUserId().equals(loggedInUserId)) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
                         .body(new ApiResponse<>(403, "You do not have permission to update this project.", null, "Access Denied"));
             }
 
-            // Proceed with updating the project
+
             ProjectDTO updatedProject = projectService.updateProject(projectId, projectDTO, authenticatedUser);
 
             return ResponseEntity.ok(new ApiResponse<>(200, "Project updated successfully", updatedProject, null));
@@ -93,7 +92,7 @@ public class ProjectController {
     @DeleteMapping("/{projectId}")
     public ResponseEntity<ApiResponse<String>> deleteProject(@PathVariable Integer projectId) {
         try {
-            projectService.deleteProject(projectId); // Service method handles validation
+            projectService.deleteProject(projectId);
             return ResponseEntity.ok(new ApiResponse<>(200, "Project deleted successfully.", null, null));
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -110,7 +109,7 @@ public class ProjectController {
 
 
 
-    // Get all projects for a user
+
     @GetMapping("/user/{userId}/projects")
     public ResponseEntity<ApiResponse<List<ProjectDTO>>> getUserProjects(@PathVariable Integer userId) {
         List<ProjectDTO> userProjects = projectService.getUserProjects(String.valueOf(userId));
@@ -130,7 +129,7 @@ public class ProjectController {
 
 
 
-    // Delete a project assigned to a user
+
     @DeleteMapping("/user/{userId}/projects/{projectId}")
     public ResponseEntity<ApiResponse<String>> deleteUserProject(
             @PathVariable Integer userId,
@@ -147,7 +146,7 @@ public class ProjectController {
         }
     }
 
-    // Get all projects
+
     @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping
     public ResponseEntity<ApiResponse<List<ProjectDTO>>> getAllProjects() {
@@ -167,37 +166,37 @@ public class ProjectController {
     @PostMapping
     public ResponseEntity<ApiResponse<ProjectDTO>> createProject(@RequestBody ProjectDTO projectDTO) {
         try {
-            // Ensure mentorId is provided
+
             if (projectDTO.getMentorId() == null) {
                 throw new RuntimeException("Mentor ID is required.");
             }
 
-            // Fetch the mentor from the database
+
             User mentor = userRepository.findById(projectDTO.getMentorId())
                     .orElseThrow(() -> new RuntimeException("Mentor not found with ID: " + projectDTO.getMentorId()));
 
-            // Check if the user is actually a mentor
+
             if (!"MENTOR".equalsIgnoreCase(mentor.getRole().getRoleName())) {
                 throw new RuntimeException("User " + mentor.getUserId() + " is not a mentor.");
             }
 
-            // Ensure mentor is active and not soft deleted
+
             if (!"ACTIVE".equalsIgnoreCase(mentor.getStatus().name()) || mentor.getDeletedAt() != null) {
                 throw new RuntimeException("Mentor " + mentor.getUserId() + " is inactive or deleted.");
             }
 
-            // Check if the mentor is already assigned to the project
+
             if (userProjectRepository.findByUserIdAndProjectId(mentor.getUserId(), projectDTO.getProjectId()).isPresent()) {
                 throw new RuntimeException("Mentor is already assigned to this project.");
             }
 
-            // Set the mentor before passing to service
+
             projectDTO.setMentorId(mentor.getUserId());
 
-            // Proceed with project creation
+
             ProjectDTO createdProject = projectService.createProject(projectDTO);
 
-            // Create the response
+
             ApiResponse<ProjectDTO> response = new ApiResponse<>(201, "Project created successfully", createdProject, null);
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
 
@@ -211,13 +210,13 @@ public class ProjectController {
 
 
 
-    // Get projects based on user role
+
     @GetMapping("/user/projects")
     public ResponseEntity<List<ProjectDTO>> getProjectsByUserRole() {
         return ResponseEntity.ok(projectService.getProjectsByUserRole());
     }
 
-    // Get total count of all projects
+
     @GetMapping("/user/projects/count")
     public ResponseEntity<ApiResponse<Integer>> getTotalProjectCount() {
         try {

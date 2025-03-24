@@ -31,7 +31,7 @@ public class BadgeService {
         if (file != null && !file.isEmpty()) {
             badge.setImage(file.getBytes());
         } else {
-            System.out.println("File is null or empty!");  // Debugging
+            System.out.println("File is null or empty!");
         }
 
         badgeRepository.save(badge);

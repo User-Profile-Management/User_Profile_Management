@@ -34,7 +34,7 @@ public class UserProjectController {
         this.projectRepository = projectRepository;
     }
 
-    @GetMapping // For reference only
+    @GetMapping
     public ResponseEntity<ApiResponse<List<UserProject>>> getAllUserProjects() {
         List<UserProject> userProjects = userProjectService.getAllUserProjects();
         return ResponseEntity.ok(new ApiResponse(200, "Fetched all user projects", userProjects, null));
@@ -47,7 +47,7 @@ public class UserProjectController {
         return ResponseEntity.ok(new ApiResponse(200, "Assigned projects fetched successfully", projects, null));
     }
 
-    //change the status of a students project
+
     @PutMapping("/users/{userId}/projects/{projectId}")
     @PreAuthorize("hasAuthority('MENTOR')")
     public ResponseEntity<ApiResponse> updateUserProjectStatus(
@@ -57,28 +57,24 @@ public class UserProjectController {
             @AuthenticationPrincipal UserDetails authenticatedUser) {
 
         String status = request.get("status");
-        String loggedInUserId = authenticatedUser.getUsername(); // Assuming userId is stored as username
+        String loggedInUserId = authenticatedUser.getUsername();
 
-        // Fetch the project from the database
+
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new RuntimeException("Project not found with ID: " + projectId));
 
-        // Check if the logged-in mentor is the assigned mentor for the project
         if (!project.getMentor().getUserId().equals(loggedInUserId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(new ApiResponse(403, "You do not have permission to update this project status.", null, "Access Denied"));
         }
 
-        // Proceed with updating the project status
+
         userProjectService.updateUserProjectStatus(userId, projectId, status);
         return ResponseEntity.ok(new ApiResponse(200, "Project status updated successfully", "Status: " + status, null));
     }
 
 
-    // @GetMapping("/project/{projectId}") // Needed if mentor wants to see all the students in a project
-    // public List<UserProject> getUsersByProjectId(@PathVariable int projectId) {
-    //     return userProjectService.getUsersByProjectId(projectId);
-    // }
+
 
     @PostMapping
     @PreAuthorize("hasAuthority('MENTOR')")
@@ -86,10 +82,10 @@ public class UserProjectController {
         var auth = SecurityContextHolder.getContext().getAuthentication();
         System.out.println("User Roles: " + auth.getAuthorities()); // Debugging line
 
-        // Call service method (which returns UserProjectDTO)
+
         UserProjectDTO createdUserProject = userProjectService.addUserProject(userProject);
 
-        // Return the correct DTO type in the response
+
         return ResponseEntity.status(201)
                 .body(new ApiResponse<>(201, "User project added successfully", createdUserProject, null));
     }

@@ -13,44 +13,30 @@
       <change beforePath="$PROJECT_DIR$/src/main/java/com/example/task/Controller/UserBadgeController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/task/Controller/UserBadgeController.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/example/task/Controller/UserController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/task/Controller/UserController.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/example/task/Controller/UserProjectController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/task/Controller/UserProjectController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/task/DTO/UserProjectDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/task/DTO/UserProjectDTO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/task/Entity/Badge.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/task/Entity/Badge.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/task/Entity/Project.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/task/Entity/Project.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/task/Entity/Role.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/task/Entity/Role.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/task/Entity/User.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/task/Entity/User.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/task/DTO/ApiResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/task/DTO/ApiResponse.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/example/task/Mapper/ProjectMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/task/Mapper/ProjectMapper.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/task/Mapper/UserBadgeMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/task/Mapper/UserBadgeMapper.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/example/task/Mapper/UserProjectMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/task/Mapper/UserProjectMapper.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/example/task/Repository/CertificateRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/task/Repository/CertificateRepository.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/example/task/Repository/ProjectRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/task/Repository/ProjectRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/task/Repository/UserProjectRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/task/Repository/UserProjectRepository.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/example/task/Repository/UserRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/task/Repository/UserRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/task/Security/JwtAuthFilter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/task/Security/JwtAuthFilter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/task/Service/AuthService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/task/Service/AuthService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/task/Service/BadgeService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/task/Service/BadgeService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/example/task/Service/CertificateService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/task/Service/CertificateService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/task/Service/CustomUserDetailService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/task/Service/CustomUserDetailService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/example/task/Service/ProjectService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/task/Service/ProjectService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/task/Service/RoleService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/task/Service/RoleService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/task/Service/UserBadgeService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/task/Service/UserBadgeService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/example/task/Service/UserProjectService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/task/Service/UserProjectService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/example/task/Service/UserService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/task/Service/UserService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/task/TaskApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/task/TaskApplication.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/example/task/Util/JwtUtil.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/task/Util/JwtUtil.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/application.properties" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/example/task/Config/SecurityConfig.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/task/Config/SecurityConfig.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/task/Controller/AuthController.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/task/Controller/AuthController.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/example/task/Controller/CertificateController.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/task/Controller/CertificateController.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/task/Controller/ProjectController.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/task/Controller/ProjectController.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/task/Controller/UserBadgeController.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/task/Controller/UserBadgeController.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/task/Controller/UserController.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/task/Controller/UserController.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/task/Controller/UserProjectController.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/task/Controller/UserProjectController.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/task/DTO/UserProjectDTO.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/task/DTO/UserProjectDTO.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/task/Entity/Badge.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/task/Entity/Badge.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/task/Entity/Project$ProjectBuilder.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/task/Entity/Project$ProjectBuilder.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/task/Entity/Project.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/task/Entity/Project.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/task/Entity/User$Status.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/task/Entity/User$Status.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/task/Entity/User.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/task/Entity/User.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/task/Mapper/UserProjectMapper.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/task/Mapper/UserProjectMapper.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/example/task/Repository/CertificateRepository.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/task/Repository/CertificateRepository.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/task/Repository/ProjectRepository.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/task/Repository/ProjectRepository.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/task/Repository/UserRepository.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/task/Repository/UserRepository.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/example/task/Service/CertificateService.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/task/Service/CertificateService.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/task/Service/ProjectService.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/task/Service/ProjectService.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/task/Service/UserProjectService.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/task/Service/UserProjectService.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/task/Service/UserService.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/task/Service/UserService.class" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -85,7 +71,7 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
-    "Application.TaskApplication.executor": "Debug",
+    "Application.TaskApplication.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
     "git-widget-placeholder": "feature-badge-table",

@@ -35,7 +35,7 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<JWTResponse>> login(@RequestBody LoginRequestDTO loginRequest) {
         try {
-            // Fetch user by email
+
             Optional<User> userOptional = userService.getUserByEmail(loginRequest.getEmail());
 
             if (userOptional.isEmpty()) {
@@ -46,14 +46,13 @@ public class AuthController {
 
             User user = userOptional.get();
 
-            // Reject login if user is soft-deleted
             if (user.getDeletedAt() != null) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
                         new ApiResponse<>(403, "Your account has been deleted.", null, "Soft-deleted user.")
                 );
             }
 
-            // Reject login based on status
+
             switch (user.getStatus()) {
                 case PENDING:
                     return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
@@ -68,7 +67,7 @@ public class AuthController {
                             new ApiResponse<>(403, "Your account is inactive. Please contact support.", null, "User status: INACTIVE.")
                     );
                 case ACTIVE:
-                    // Allow login only if status is ACTIVE
+
                     JWTResponse jwtResponse = authService.authenticateUser(loginRequest);
                     return ResponseEntity.ok(
                             new ApiResponse<>(200, "Login successful.", jwtResponse, null)

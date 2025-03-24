@@ -34,11 +34,11 @@ public class UserBadgeService {
             return "No badges found for user with ID: " + userId;
         }
 
-        // Set deleted timestamp for all badges
+
         userBadges.forEach(userBadge -> userBadge.setDeletedAt(LocalDateTime.now()));
         userBadgeRepository.saveAll(userBadges);
 
-        // Return success response with the count of deleted badges as a String
+
         return "Deleted " + userBadges.size() + " badges.";
     }
 
@@ -59,11 +59,11 @@ public class UserBadgeService {
     public String assignBadgeOnProjectCompletion(String userId) {
         int completedCount = userProjectRepository.countByUserIdAndStatus(userId, "COMPLETED");
 
-        // Fetch user from database
+
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
 
-        // Check if the user is ACTIVE
+
         if (!User.Status.ACTIVE.equals(user.getStatus())) {
             return "User is inactive. Cannot assign badges.";
         }

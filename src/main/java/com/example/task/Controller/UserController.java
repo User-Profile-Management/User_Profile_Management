@@ -68,13 +68,13 @@ public class UserController {
             if (userDTO.getEmergencyContact() != null && !userDTO.getEmergencyContact().matches("\\d{10}")) {
                 return ResponseEntity.badRequest().body(new ApiResponse<>(400, "Emergency Contact Number must be exactly 10 digits.", null, "Invalid Emergency Contact format."));
             }
-            // Check if the email already exists
+
             if (userRepository.existsByEmail(userDTO.getEmail())) {
                 return ResponseEntity.status(HttpStatus.CONFLICT)
                         .body(new ApiResponse<>(409, "Email is already registered.", null, "Duplicate Email"));
             }
 
-            // Check if the contact number already exists
+
             if (userRepository.existsByContactNo(userDTO.getContactNo())) {
                 return ResponseEntity.status(HttpStatus.CONFLICT)
                         .body(new ApiResponse<>(409, "Contact number is already registered.", null, "Duplicate Contact Number"));
@@ -142,14 +142,14 @@ public class UserController {
                     user.getContactNo(),
                     user.getAddress(),
                     user.getDateOfBirth(),
-                    user.getStatus().name(), // Convert Enum to String
+                    user.getStatus().name(),
                     user.getProfilePicture(),
-                    user.getRole().getRoleName() // Assuming Role has getRoleName()
+                    user.getRole().getRoleName()
             );
 
             return ResponseEntity.ok(new ApiResponse<>(200, "Profile retrieved successfully", profileDTO, null));
 
-        } catch (Exception e) {  // ✅ Add this catch block
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse<>(500, "Error retrieving profile", null, e.getMessage()));
         }
@@ -173,13 +173,13 @@ public class UserController {
         if (role != null) role = role.toUpperCase();
         if (status != null) status = status.toUpperCase();
 
-        // MENTOR can only view STUDENT profiles
+
         if (userRole.equals("MENTOR") && (role == null || !role.equals("STUDENT"))) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(new ApiResponse<>(403, "Forbidden: Mentors can only view students", null, "Access denied"));
         }
 
-        //  Fetch Users from Service
+
         List<User> users = userService.getUsersByRoleAndStatus(role, status);
 
         if (users.isEmpty()) {
@@ -187,7 +187,7 @@ public class UserController {
                     .body(new ApiResponse<>(204, "No users found", Collections.emptyList(), null));
         }
 
-        //  Convert List<User> to List<ProfileDTO>
+
         List<ProfileDTO> profileDTOs = users.stream()
                 .map(user -> new ProfileDTO(
                         user.getUserId(),
@@ -196,16 +196,16 @@ public class UserController {
                         user.getContactNo(),
                         user.getAddress(),
                         user.getDateOfBirth(),
-                        user.getStatus().name(), // Convert Enum to String
+                        user.getStatus().name(),
                         user.getProfilePicture(),
-                        user.getRole().getRoleName() // Assuming Role has getRoleName()
+                        user.getRole().getRoleName()
                 ))
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(new ApiResponse<>(200, "Profile retrieved successfully", profileDTOs, null));
     }
 
-    //restore deleted user by the admin
+
     @PreAuthorize("hasAuthority('ADMIN')")
     @PutMapping("/users/{userId}/restore")
     public ResponseEntity<ApiResponse<String>> restoreUser(@PathVariable String userId) {
@@ -218,43 +218,6 @@ public class UserController {
         }
     }
 
-
-    //done
-//    @PutMapping("/users/{userId}/status")
-//    public ResponseEntity<ApiResponse<String>> updateUserStatus(
-//            @PathVariable String userId,
-//            @RequestBody Map<String, String> request) {
-//        try {
-//            String status = request.get("status"); // Extract status from JSON
-//
-//            if (status == null || status.trim().isEmpty()) {
-//                return ResponseEntity.badRequest().body(
-//                        new ApiResponse<>(400, "Status is required.", null, "Status is empty or invalid.")
-//                );
-//            }
-//
-//            User user = userService.getUserById(userId)
-//                    .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
-//
-//            // Convert string to enum safely
-//            try {
-//                user.setStatus(User.Status.valueOf(status.toUpperCase()));
-//            } catch (IllegalArgumentException e) {
-//                return ResponseEntity.badRequest().body(
-//                        new ApiResponse<>(400, "Invalid status value.", null, "Invalid status provided.")
-//                );
-//            }
-//
-//            user.setUpdatedAt(LocalDateTime.now());
-//            userService.saveUser(user);
-//
-//            return ResponseEntity.ok(new ApiResponse<>(200, "User status updated successfully.", null, null));
-//        } catch (RuntimeException e) {
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-//                    new ApiResponse<>(500, "Error updating user status: " + e.getMessage(), null, e.getMessage())
-//            );
-//        }
-//    }
 
 
     @PutMapping("/users/{userId}")
@@ -269,14 +232,14 @@ public class UserController {
             boolean isSoftDeleted = user.getDeletedAt() != null;
             boolean isPendingOrRejected = user.getStatus() == User.Status.PENDING || user.getStatus() == User.Status.REJECTED;
 
-            // ❌ If user is soft-deleted, no updates are allowed
+
             if (isSoftDeleted) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
                         new ApiResponse<>(403, "Cannot update a deleted user.", null, "User is soft-deleted.")
                 );
             }
 
-            // ✅ Allow status change for PENDING/REJECTED users, but nothing else
+
             if (isPendingOrRejected && request.containsKey("status") && request.size() == 1) {
                 String status = request.get("status");
 
@@ -305,14 +268,14 @@ public class UserController {
                 }
             }
 
-            // ❌ If PENDING/REJECTED user tries to update other fields, reject
+
             if (isPendingOrRejected) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
                         new ApiResponse<>(403, "Only status can be updated for users with PENDING or REJECTED status.", null, "Update restricted.")
                 );
             }
 
-            // ✅ If ACTIVE/INACTIVE, allow full updates
+
             if (request.containsKey("status")) {
                 String status = request.get("status");
                 if (status == null || status.trim().isEmpty()) {
@@ -336,7 +299,7 @@ public class UserController {
                 }
             }
 
-            // ✅ Update other details if provided
+
             if (request.containsKey("fullName")) {
                 user.setFullName(request.get("fullName"));
             }
@@ -423,19 +386,19 @@ public class UserController {
     @PutMapping("/users/update-password")
     public ResponseEntity<ApiResponse<String>> updatePassword(@RequestBody Map<String, String> request) {
         try {
-            // Get authenticated user's email
+
             String email = getAuthenticatedEmail();
 
-            // Extract old and new password from request body
+
             String oldPassword = request.get("oldPassword");
             String newPassword = request.get("newPassword");
 
-            // Validate input
+
             if (oldPassword == null || newPassword == null || oldPassword.isBlank() || newPassword.isBlank()) {
                 return ResponseEntity.badRequest().body(new ApiResponse<>(400, "Missing required fields", null, "Old or new password is missing."));
             }
 
-            // Call service to update password
+
             boolean success = userService.updatePassword(email, oldPassword, newPassword);
 
             if (success) {
@@ -454,7 +417,7 @@ public class UserController {
             throw new RuntimeException("User is not authenticated");
         }
 
-        return authentication.getName(); // Extract email from the token
+        return authentication.getName();
     }
 
 

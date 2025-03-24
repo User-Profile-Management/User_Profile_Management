@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class ProjectMapper {
 
-    // Convert Project entity to ProjectDTO (Only returning mentor ID)
+
     public ProjectDTO toDTO(Project project) {
         return ProjectDTO.builder()
                 .projectId(project.getProjectId())
@@ -18,13 +18,13 @@ public class ProjectMapper {
                 .build();
     }
 
-    // Convert ProjectDTO to Project entity (Requires full User object)
+
     public Project toEntity(ProjectDTO dto, User mentor) {
         return Project.builder()
                 .projectId(dto.getProjectId())
                 .projectName(dto.getProjectName())
                 .description(dto.getDescription())
-                .mentor(mentor) // Attach full mentor entity
+                .mentor(mentor)
                 .build();
     }
 }

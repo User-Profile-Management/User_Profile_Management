@@ -34,7 +34,7 @@ public class UserService implements UserDetailsService {
     }
 
     public List<User> getActiveUsersByRole(String roleName) {
-        Role role = roleService.getRoleByName(roleName); // Fetch Role entity
+        Role role = roleService.getRoleByName(roleName);
         return userRepository.findByRoleAndStatus(role, User.Status.ACTIVE);
     }
 
@@ -76,7 +76,7 @@ public class UserService implements UserDetailsService {
     }
 
     public String generateUserId(Role role) {
-        String prefix = "USR"; // Default prefix
+        String prefix = "USR";
         if (role != null) {
             prefix = switch (role.getRoleName().toUpperCase()) {
                 case "STUDENT" -> "STU";
@@ -101,24 +101,24 @@ public class UserService implements UserDetailsService {
 
         return user.filter(u ->
                 passwordEncoder.matches(rawPassword, u.getPassword()) &&
-                        u.getStatus() == User.Status.ACTIVE // Ensure user is approved
+                        u.getStatus() == User.Status.ACTIVE
         );
     }
 
 
-    // Get Pending Approval Users
+
     public List<User> getPendingApprovalUsers() {
         return userRepository.findByStatusAndDeletedAtIsNull(User.Status.INACTIVE);
     }
 
 
-    // Get User by Email
+
     public Optional<User> getUserByEmail(String email) {
         return userRepository.findByEmail(email);
     }
 
     public List<User> getAllUsers() {
-        return userRepository.findAllByDeletedAtIsNull(); // Fetch only non-deleted users
+        return userRepository.findAllByDeletedAtIsNull();
     }
 
 
@@ -176,7 +176,7 @@ public class UserService implements UserDetailsService {
                     existingUser.setStatus(updatedUser.getStatus());
                     existingUser.setRole(updatedUser.getRole());
 
-                    // Add emergency contact update
+
                     existingUser.setEmergencyContact(updatedUser.getEmergencyContact());
 
                     existingUser.setUpdatedAt(LocalDateTime.now());
@@ -187,8 +187,8 @@ public class UserService implements UserDetailsService {
     @Transactional
     public void deleteUser(String userId) {
         userRepository.findById(userId).ifPresent(user -> {
-            user.setDeletedAt(LocalDateTime.now()); // Mark as deleted
-            userRepository.save(user); // Save changes
+            user.setDeletedAt(LocalDateTime.now());
+            userRepository.save(user);
         });
     }
 
@@ -198,9 +198,9 @@ public class UserService implements UserDetailsService {
         if (userOptional.isPresent()) {
             User user = userOptional.get();
 
-            // Verify old password
+
             if (passwordEncoder.matches(oldPassword, user.getPassword())) {
-                user.setPassword(passwordEncoder.encode(newPassword)); // Encode new password
+                user.setPassword(passwordEncoder.encode(newPassword));
                 userRepository.save(user);
                 return true;
             } else {
@@ -223,10 +223,10 @@ public class UserService implements UserDetailsService {
         Role role = null;
         if (roleName != null) {
             roleName = roleName.toUpperCase();
-            role = roleService.getRoleByName(roleName); // Fetch Role entity
+            role = roleService.getRoleByName(roleName);
         }
 
-        // Convert status String to User.Status Enum
+
         User.Status statusEnum = null;
         if (status != null) {
             try {
@@ -236,7 +236,7 @@ public class UserService implements UserDetailsService {
             }
         }
 
-        // Fetch users based on role and status filters
+
         if (role != null && statusEnum != null) {
             return userRepository.findByRoleAndStatus(role, statusEnum);
         } else if (role != null) {
@@ -250,7 +250,7 @@ public class UserService implements UserDetailsService {
 
 
     public void restoreUser(String userId) {
-        Optional<User> userOptional = userRepository.findByIdIncludingDeleted(userId); // Fetch deleted users
+        Optional<User> userOptional = userRepository.findByIdIncludingDeleted(userId);
 
         if (userOptional.isEmpty()) {
             throw new RuntimeException("User not found with ID: " + userId);
@@ -262,7 +262,7 @@ public class UserService implements UserDetailsService {
             throw new RuntimeException("User is already active.");
         }
 
-        user.setDeletedAt(null); // Restore user
+        user.setDeletedAt(null);
         userRepository.save(user);
     }
 

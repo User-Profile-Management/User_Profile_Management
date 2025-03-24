@@ -39,7 +39,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
 
-        // Skip JWT authentication for public endpoints
+
         String requestURI = request.getRequestURI();
         if (requestURI.startsWith("/api/auth/") || requestURI.startsWith("/api/roles/")) {
             chain.doFilter(request, response);

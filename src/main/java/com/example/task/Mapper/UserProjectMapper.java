@@ -18,7 +18,7 @@ public class UserProjectMapper {
                         userProject.getUser().getContactNo(),
                         userProject.getUser().getAddress(),
                         userProject.getUser().getDateOfBirth(),
-                        userProject.getUser().getStatus().name(),  // Convert Enum to String
+                        userProject.getUser().getStatus().name(),
                         userProject.getUser().getProfilePicture(),
                         userProject.getUser().getRole().getRoleName()
                 ),

@@ -7,8 +7,8 @@ import java.util.List;
 
 public interface CertificateRepository extends JpaRepository<Certificate, Integer> {
 
-    boolean existsByUserAndCertificateName(User user, String certificateName);
+    boolean existsByUserUserIdAndCertificateName(String userId, String certificateName);
     List<Certificate> findByUserUserId(String userId);
 
-    boolean existsByUserUserIdAndCertificateName(String userId, String certificateName);
+//    boolean existsByUserUserIdAndCertificateName(String user, String certificateName);
 }
