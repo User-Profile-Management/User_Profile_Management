@@ -111,7 +111,7 @@ public class ProjectController {
 
 
     @GetMapping("/user/{userId}/projects")
-    public ResponseEntity<ApiResponse<List<ProjectDTO>>> getUserProjects(@PathVariable Integer userId) {
+    public ResponseEntity<ApiResponse<List<ProjectDTO>>> getUserProjects(@PathVariable String userId) {
         List<ProjectDTO> userProjects = projectService.getUserProjects(String.valueOf(userId));
 
         if (userProjects != null && !userProjects.isEmpty()) {
@@ -130,9 +130,10 @@ public class ProjectController {
 
 
 
-    @DeleteMapping("/user/{userId}/projects/{projectId}")
+    @DeleteMapping("/users/{userId}/projects/{projectId}")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<ApiResponse<String>> deleteUserProject(
-            @PathVariable Integer userId,
+            @PathVariable String userId,
             @PathVariable Integer projectId) {
         try {
             projectService.deleteUserProject(String.valueOf(userId), projectId);

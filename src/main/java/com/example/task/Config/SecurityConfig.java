@@ -73,6 +73,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/projects/{projectId}").permitAll()
                         .requestMatchers(HttpMethod.PUT, "/api/projects/*").hasAnyAuthority("MENTOR", "ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/projects/*").hasAuthority("ADMIN")
+                                .requestMatchers(HttpMethod.DELETE, "/api/projects/users/{userId}/projects/{projectId}").hasAuthority("ADMIN")
 
                         // Certificate endpoints
 
