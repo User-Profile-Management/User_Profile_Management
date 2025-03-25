@@ -9,12 +9,14 @@ import com.example.task.Service.UserService;
 import com.example.task.Util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -225,7 +227,7 @@ public class UserController {
             @PathVariable String userId,
             @RequestBody Map<String, String> request) {
         try {
-            // Fetch the user
+            
             User user = userService.getUserById(userId)
                     .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
 
@@ -336,9 +338,14 @@ public class UserController {
 
 
 
-    @PutMapping("/users/profile")
+    @PutMapping(value = "/users/profile", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     @PreAuthorize("hasAnyAuthority('MENTOR', 'STUDENT')")
-    public ResponseEntity<?> updateOwnProfile(@RequestBody User updatedUser) {
+    public ResponseEntity<?> updateOwnProfile(
+            @RequestParam("emergencyNo") String emergencyNo,
+            @RequestParam("contactNo") String contactNo,
+            @RequestParam("address") String address,
+            @RequestParam(value = "profilePicture", required = false) MultipartFile profilePicture) {
+
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             String currentUserEmail = authentication.getName();
@@ -348,12 +355,23 @@ public class UserController {
                 return ResponseEntity.badRequest().body("User not found");
             }
 
-            User user = userService.updateUserProfile(currentUserOpt.get().getUserId(), updatedUser);
-            return ResponseEntity.ok(user);
-        } catch (RuntimeException e) {
+            User user = currentUserOpt.get();
+            user.setEmergencyContact(emergencyNo);
+            user.setContactNo(contactNo);
+            user.setAddress(address);
+            if (profilePicture != null && !profilePicture.isEmpty()) {
+                user.setProfilePicture(profilePicture.getBytes());
+            }
+
+            User updatedUser = userService.updateUserProfile(user.getUserId(), user);
+            return ResponseEntity.ok(updatedUser);
+
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+
 
     @PreAuthorize("hasAuthority('ADMIN')")
     @DeleteMapping("/users/{id}")

@@ -13,7 +13,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -163,6 +165,16 @@ public class UserService implements UserDetailsService {
                     existingUser.setUpdatedAt(LocalDateTime.now());
                     return userRepository.save(existingUser);
                 }).orElseThrow(() -> new RuntimeException("User not found or has been deleted: " + userId));
+    }
+    public User updateProfilePicture(String userId, MultipartFile profilePicture) throws IOException {
+        User user = getUserById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (!profilePicture.isEmpty()) {
+            user.setProfilePicture(profilePicture.getBytes());
+            saveUser(user);
+        }
+        return user;
     }
 
 

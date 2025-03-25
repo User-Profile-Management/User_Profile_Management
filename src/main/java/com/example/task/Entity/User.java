@@ -54,8 +54,11 @@ public class User {
     @JsonIgnore
     private String password;
 
-    @Column(nullable = true)
-    private String profilePicture; // Profile picture can be null
+    @Column(name = "profile_picture")
+    @Lob// Change storage type
+    private byte[] profilePicture;
+
+
 
 
     @Column(name = "email", nullable = false, unique = true)
@@ -166,11 +169,11 @@ public class User {
         this.password = password;
     }
 
-    public String getProfilePicture() {
+    public byte[] getProfilePicture() {
         return profilePicture;
     }
 
-    public void setProfilePicture(String profilePicture) {
+    public void setProfilePicture(byte[] profilePicture) {
         this.profilePicture = profilePicture;
     }
 
