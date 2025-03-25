@@ -22,9 +22,9 @@ public class Certificate {
     @Column(name = "issued_by", nullable = false)
     private String issuedBy;
 
-    @Lob  // Marks the field as Large Object (BLOB)
+    @Lob
     @Column(name = "certificate_pdf")
-    private byte[] certificatePdf;  // Binary data for the PDF file
+    private byte[] certificatePdf;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
