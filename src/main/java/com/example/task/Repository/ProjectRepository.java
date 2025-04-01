@@ -14,7 +14,7 @@ import java.util.Optional;
 @Repository
 public interface ProjectRepository extends JpaRepository<Project, Integer> {
 
-    // Corrected method to check if a mentor is assigned to a project
+    
     boolean existsByMentorUserIdAndProjectId(String mentorId, Integer projectId);
 
     Optional<Project> findByProjectIdAndMentor(Integer projectId, User mentor);
