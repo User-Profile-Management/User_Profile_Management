@@ -89,7 +89,9 @@ public class UserController {
             user.setDateOfBirth(userDTO.getDateOfBirth());
             user.setPassword(userDTO.getPassword());
             user.setContactNo(userDTO.getContactNo());
+
             user.setAddress(userDTO.getAddress());
+            user.setEmergencyContact(userDTO.getEmergencyContact());
             user.setStatus(User.Status.PENDING);
             user.setProfilePicture(null);
             user.setEmail(userDTO.getEmail());
@@ -144,13 +146,14 @@ public class UserController {
                     user.getFullName(),
                     user.getEmail(),
                     user.getContactNo(),
-                    user.getAddress(),
                     user.getEmergencyContact(),
+                    user.getAddress(),           
                     user.getDateOfBirth(),
                     user.getStatus().name(),
                     user.getProfilePicture(),
                     user.getRole().getRoleName()
             );
+
 
             return ResponseEntity.ok(new ApiResponse<>(200, "Profile retrieved successfully", profileDTO, null));
 
@@ -199,8 +202,9 @@ public class UserController {
                         user.getFullName(),
                         user.getEmail(),
                         user.getContactNo(),
-                        user.getEmergencyContact(),
                         user.getAddress(),
+                        user.getEmergencyContact(),
+
                         user.getDateOfBirth(),
                         user.getStatus().name(),
                         user.getProfilePicture(),

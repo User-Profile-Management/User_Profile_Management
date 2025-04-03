@@ -8,26 +8,28 @@ public class ProfileDTO {
     private String fullName;
     private String email;
     private String contactNo;
-    private String emergencyContact;
     private String address;
+    private String emergencyContact;
+
     private LocalDate dateOfBirth;
     private String status;
     private byte[] profilePicture;
     private String role;
 
-    public ProfileDTO(String userId, String fullName, String email, String emergencyContact,String contactNo, String address,
+    public ProfileDTO(String userId, String fullName, String email, String contactNo, String emergencyContact, String address,
                       LocalDate dateOfBirth, String status, byte[] profilePicture, String role) {
         this.userId = userId;
         this.fullName = fullName;
         this.email = email;
         this.contactNo = contactNo;
-        this.emergencyContact= emergencyContact;
+        this.emergencyContact = emergencyContact;
         this.address = address;
         this.dateOfBirth = dateOfBirth;
         this.status = status;
         this.profilePicture = profilePicture;
         this.role = role;
     }
+
 
     // Corrected Getters
     public String getUserId() { return userId; }
@@ -42,7 +44,7 @@ public class ProfileDTO {
     public String getAddress() { return address; }
     public LocalDate getDateOfBirth() { return dateOfBirth; }
     public String getStatus() { return status; }
-    public byte[] getProfilePicture() { return profilePicture; }  // FIXED: Returns byte[]
+    public byte[] getProfilePicture() { return profilePicture; }
     public String getRole() { return role; }
 
     // Setters
