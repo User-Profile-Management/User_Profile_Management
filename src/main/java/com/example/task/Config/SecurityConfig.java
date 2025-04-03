@@ -29,7 +29,10 @@ import java.util.Arrays;
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
-
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
     private final JwtAuthFilter jwtAuthFilter;
     private final UserDetailsService userDetailsService;
 
@@ -63,6 +66,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/users/*").hasAuthority("ADMIN")
                         .requestMatchers("/api/users/*/status").hasAuthority("ADMIN")
                                 .requestMatchers(HttpMethod.PUT, "/api/users/{userId}/restore").hasAuthority( "ADMIN")
+                                .requestMatchers(HttpMethod.GET, "/api/users/projects/{userId}").hasAuthority("ADMIN")
 
                         // Students endpoint for mentors and admins
                         .requestMatchers("/api/users/active").hasAnyAuthority("MENTOR", "ADMIN")
@@ -113,10 +117,7 @@ public class SecurityConfig {
         return authProvider;
     }
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {

@@ -15,6 +15,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -34,12 +35,13 @@ public class UserController {
     private final UserService userService;
     private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
-
+    private final PasswordEncoder passwordEncoder;
     @Autowired
-    public UserController(UserService userService, JwtUtil jwtUtil,UserRepository userRepository) {
+    public UserController(UserService userService, JwtUtil jwtUtil,UserRepository userRepository,PasswordEncoder passwordEncoder) {
         this.userService = userService;
         this.jwtUtil = jwtUtil;
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @PostMapping("/users/register")
@@ -147,7 +149,7 @@ public class UserController {
                     user.getEmail(),
                     user.getContactNo(),
                     user.getEmergencyContact(),
-                    user.getAddress(),           
+                    user.getAddress(),
                     user.getDateOfBirth(),
                     user.getStatus().name(),
                     user.getProfilePicture(),
@@ -343,15 +345,38 @@ public class UserController {
             );
         }
     }
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @GetMapping("/users/profile/{userId}")
+    public ResponseEntity<ApiResponse<User>> getUserById(@PathVariable String userId) {
+        try {
+
+            User user = userService.getUserById(userId)
+                    .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
 
 
+            if (user.getDeletedAt() != null) {
+                return ResponseEntity.status(403).body(
+                        new ApiResponse<>(403, "This user has been deleted.", null, "Soft-deleted user.")
+                );
+            }
+
+           
+            return ResponseEntity.ok(new ApiResponse<>(200, "User retrieved successfully.", user, null));
+
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(500).body(
+                    new ApiResponse<>(500, "Error retrieving user details: " + e.getMessage(), null, e.getMessage())
+            );
+        }
+    }
 
     @PutMapping(value = "/users/profile", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     @PreAuthorize("hasAnyAuthority('ADMIN','MENTOR', 'STUDENT')")
     public ResponseEntity<?> updateOwnProfile(
-            @RequestParam("emergencyContact") String emergencyNo,
-            @RequestParam("contactNo") String contactNo,
-            @RequestParam("address") String address,
+            @RequestParam(value = "password",required = false) String password,
+            @RequestParam(value = "emergencyContact",required = false) String emergencyNo,
+            @RequestParam(value = "contactNo",required = false) String contactNo,
+            @RequestParam(value = "address",required = false) String address,
             @RequestPart(value = "profilePicture", required = false) MultipartFile profilePicture) {
 
         try {
@@ -364,9 +389,18 @@ public class UserController {
             }
 
             User user = currentUserOpt.get();
-            user.setEmergencyContact(emergencyNo);
-            user.setContactNo(contactNo);
-            user.setAddress(address);
+            if (password != null && !password.isEmpty()) {
+                user.setPassword(passwordEncoder.encode(password));  // Ensure password is encrypted
+            }
+            if (emergencyNo != null && !emergencyNo.isEmpty()) {
+                user.setEmergencyContact(emergencyNo);
+            }
+            if (contactNo != null && !contactNo.isEmpty()) {
+                user.setContactNo(contactNo);
+            }
+            if (address != null && !address.isEmpty()) {
+                user.setAddress(address);
+            }
             if (profilePicture != null && !profilePicture.isEmpty()) {
                 user.setProfilePicture(profilePicture.getBytes());
             }
