@@ -54,30 +54,40 @@ public class ProjectController {
             @AuthenticationPrincipal UserDetails authenticatedUser) {
 
         try {
+            // Check if authenticatedUser is null
+            if (authenticatedUser == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(new ApiResponse<>(401, "User is not authenticated", null, "Unauthorized"));
+            }
 
-            String loggedInUserId = authenticatedUser.getUsername();
+            String loggedInUserEmail = authenticatedUser.getUsername();
 
+            // Fetch user by email
+            User loggedInUser = userRepository.findByEmail(loggedInUserEmail)
+                    .orElseThrow(() -> new RuntimeException("Authenticated user not found in DB"));
 
+            // Check if project exists
             Project existingProject = projectRepository.findById(projectId)
                     .orElseThrow(() -> new RuntimeException("Project not found with ID: " + projectId));
 
-
+            // Check if the project is deleted
             if (existingProject.getDeletedAt() != null) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                         .body(new ApiResponse<>(400, "Project is deleted and cannot be updated", null, null));
             }
 
+            // Check if the user is an admin
+            boolean isAdmin = loggedInUser.getRole() != null &&
+                    loggedInUser.getRole().getRoleName().equalsIgnoreCase("ADMIN");
 
-            User loggedInUser = userRepository.findByUserId(loggedInUserId);
-            boolean isAdmin = loggedInUser.getRole().getRoleName().equalsIgnoreCase("ADMIN");
-
-
-            if (!isAdmin && !existingProject.getMentor().getUserId().equals(loggedInUserId)) {
+            // Admin can edit any project, but mentors can only edit their own projects
+            if (!isAdmin && (existingProject.getMentor() == null ||
+                    !existingProject.getMentor().getUserId().equals(loggedInUser.getUserId()))) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
                         .body(new ApiResponse<>(403, "You do not have permission to update this project.", null, "Access Denied"));
             }
 
-
+            // Update the project
             ProjectDTO updatedProject = projectService.updateProject(projectId, projectDTO, authenticatedUser);
 
             return ResponseEntity.ok(new ApiResponse<>(200, "Project updated successfully", updatedProject, null));
