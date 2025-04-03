@@ -18,12 +18,14 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
+
+import static org.hibernate.query.results.Builders.fetch;
 
 @RestController
 @RequestMapping("/api")
@@ -143,6 +145,7 @@ public class UserController {
                     user.getEmail(),
                     user.getContactNo(),
                     user.getAddress(),
+                    user.getEmergencyContact(),
                     user.getDateOfBirth(),
                     user.getStatus().name(),
                     user.getProfilePicture(),
@@ -196,6 +199,7 @@ public class UserController {
                         user.getFullName(),
                         user.getEmail(),
                         user.getContactNo(),
+                        user.getEmergencyContact(),
                         user.getAddress(),
                         user.getDateOfBirth(),
                         user.getStatus().name(),
@@ -339,12 +343,12 @@ public class UserController {
 
 
     @PutMapping(value = "/users/profile", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
-    @PreAuthorize("hasAnyAuthority('MENTOR', 'STUDENT')")
+    @PreAuthorize("hasAnyAuthority('ADMIN','MENTOR', 'STUDENT')")
     public ResponseEntity<?> updateOwnProfile(
-            @RequestParam("emergencyNo") String emergencyNo,
+            @RequestParam("emergencyContact") String emergencyNo,
             @RequestParam("contactNo") String contactNo,
             @RequestParam("address") String address,
-            @RequestParam(value = "profilePicture", required = false) MultipartFile profilePicture) {
+            @RequestPart(value = "profilePicture", required = false) MultipartFile profilePicture) {
 
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -370,6 +374,8 @@ public class UserController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+
 
 
 

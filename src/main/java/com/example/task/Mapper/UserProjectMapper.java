@@ -16,6 +16,7 @@ public class UserProjectMapper {
                 userProject.getUser().getFullName(),
                 userProject.getUser().getEmail(),
                 userProject.getUser().getContactNo(),
+                userProject.getUser().getEmergencyContact(),
                 userProject.getUser().getAddress(),
                 userProject.getUser().getDateOfBirth(),
                 userProject.getUser().getStatus().name(),
