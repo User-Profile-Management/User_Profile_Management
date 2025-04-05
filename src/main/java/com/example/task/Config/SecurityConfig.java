@@ -90,8 +90,8 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.POST, "/api/user-projects").hasAuthority("MENTOR")
                         .requestMatchers(HttpMethod.PUT, "/api/user-projects/users/{userId}/projects/*").hasAuthority("MENTOR")
 
-                        .requestMatchers(HttpMethod.GET, "/api/user-projects/users/*").hasAnyAuthority("ADMIN", "MENTOR")
-//                        .requestMatchers(HttpMethod.GET, "/api/user-projects/user").hasAuthority("STUDENT")
+                        .requestMatchers(HttpMethod.GET, "/api/user-projects/users/*").hasAnyAuthority("ADMIN", "MENTOR","STUDENT")
+                        .requestMatchers(HttpMethod.GET, "/api/user-projects/user/{userId}").hasAuthority("STUDENT")
 
                         //userbadges
 

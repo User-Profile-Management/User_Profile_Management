@@ -48,10 +48,10 @@ public class UserProjectController {
         return ResponseEntity.ok(new ApiResponse(200, "Fetched all user projects", userProjects, null));
     }
 
-    @GetMapping("/users/{studentId}")
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'MENTOR') or #studentId == authentication.principal.id")
-    public ResponseEntity<ApiResponse> getAssignedProjects(@PathVariable String studentId, Authentication authentication) {
-        List<Project> projects = userProjectService.getAssignedProjects(studentId);
+    @GetMapping("/users/{userId}")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'MENTOR','STUDENT') or #userId == authentication.principal.id")
+    public ResponseEntity<ApiResponse> getAssignedProjects(@PathVariable String userId, Authentication authentication) {
+        List<Project> projects = userProjectService.getAssignedProjects(userId);
         return ResponseEntity.ok(new ApiResponse(200, "Assigned projects fetched successfully", projects, null));
     }
 
@@ -94,28 +94,54 @@ public class UserProjectController {
     }
     @PutMapping("/users/{userId}/projects/{projectId}")
     @PreAuthorize("hasAuthority('MENTOR')")
-    public ResponseEntity<ApiResponse> updateUserProjectStatus(
+    public ResponseEntity<ApiResponse<String>> updateUserProjectStatus(
             @PathVariable String userId,
             @PathVariable Integer projectId,
-            @RequestParam Map<String, String> request,
+            @RequestBody Map<String, String> request,
             @AuthenticationPrincipal UserDetails authenticatedUser) {
 
-        String status = request.get("status");
-        String loggedInUserId = authenticatedUser.getUsername();
+        String email = authenticatedUser.getUsername();
+        String mentorId;
 
-
-        Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new RuntimeException("Project not found with ID: " + projectId));
-
-        if (!project.getMentor().getUserId().equals(loggedInUserId)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(new ApiResponse(403, "You do not have permission to update this project status.", null, "Access Denied"));
+        try {
+            mentorId = userRepository.findByEmail(email)
+                    .map(User::getUserId)
+                    .orElseThrow(() -> new UsernameNotFoundException("Mentor not found: " + email));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(500, "Internal Server Error", null, "Could not retrieve mentor ID"));
         }
 
+        String status = request.get("status");
+        if (status == null || status.isEmpty()) {
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>(400, "Bad Request", null, "Status is required"));
+        }
 
-        userProjectService.updateUserProjectStatus(userId, projectId, status);
-        return ResponseEntity.ok(new ApiResponse(200, "Project status updated successfully", "Status: " + status, null));
+        // Step 1: Check if the project exists
+        Project project = projectService.getProjectById(projectId);
+        if (project == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ApiResponse<>(404, "Project not found", null, "The specified project does not exist"));
+        }
+
+        // Step 2: Check if the mentor is assigned to the project
+        boolean isMentorAssigned = projectService.isMentorAssignedToProject(mentorId, projectId);
+        if (!isMentorAssigned) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(new ApiResponse<>(403, "Access Denied", null, "Mentor is not assigned to this project"));
+        }
+
+        // Step 3: Proceed to update user project status
+        try {
+            userProjectService.updateUserProjectStatus(userId, projectId, status);
+            return ResponseEntity.ok(new ApiResponse<>(200, "Project status updated successfully", "Status: " + status, null));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(500, "Failed to update status", null, e.getMessage()));
+        }
     }
+
 
 
 
