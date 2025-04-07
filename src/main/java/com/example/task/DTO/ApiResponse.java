@@ -13,6 +13,6 @@ public class ApiResponse<T> {
     private T response;
     private String error;
 
-    public ApiResponse(int i, String projectFound, ProjectDTO project) {
+    public ApiResponse(int i, String projectFound, ProjectDTO project,String error) {
     }
 }

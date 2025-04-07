@@ -373,7 +373,7 @@ public class UserController {
     @PutMapping(value = "/users/profile", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     @PreAuthorize("hasAnyAuthority('ADMIN','MENTOR', 'STUDENT')")
     public ResponseEntity<?> updateOwnProfile(
-            @RequestParam(value = "password",required = false) String password,
+
             @RequestParam(value = "emergencyContact",required = false) String emergencyNo,
             @RequestParam(value = "contactNo",required = false) String contactNo,
             @RequestParam(value = "address",required = false) String address,
@@ -389,9 +389,7 @@ public class UserController {
             }
 
             User user = currentUserOpt.get();
-            if (password != null && !password.isEmpty()) {
-                user.setPassword(passwordEncoder.encode(password));  // Ensure password is encrypted
-            }
+
             if (emergencyNo != null && !emergencyNo.isEmpty()) {
                 user.setEmergencyContact(emergencyNo);
             }
@@ -452,16 +450,16 @@ public class UserController {
             String email = getAuthenticatedEmail();
 
 
-            String oldPassword = request.get("oldPassword");
+            String currentPassword = request.get("currentPassword");
             String newPassword = request.get("newPassword");
 
 
-            if (oldPassword == null || newPassword == null || oldPassword.isBlank() || newPassword.isBlank()) {
+            if (currentPassword == null || newPassword == null || currentPassword.isBlank() || newPassword.isBlank()) {
                 return ResponseEntity.badRequest().body(new ApiResponse<>(400, "Missing required fields", null, "Old or new password is missing."));
             }
 
 
-            boolean success = userService.updatePassword(email, oldPassword, newPassword);
+            boolean success = userService.updatePassword(email, currentPassword, newPassword);
 
             if (success) {
                 return ResponseEntity.ok(new ApiResponse<>(200, "Password updated successfully.", null, null));

@@ -43,7 +43,9 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         String requestURI = request.getRequestURI();
 
         // Skip JWT authentication for login
-        if (requestURI.startsWith("/auth/login")) {
+        if (
+                requestURI.startsWith("/auth/login") || requestURI.startsWith("/auth/google-login")
+        ) {
             chain.doFilter(request, response);
             return;
         }
