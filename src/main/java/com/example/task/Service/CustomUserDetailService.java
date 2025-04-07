@@ -25,6 +25,7 @@ public class CustomUserDetailService implements UserDetailsService {
     private final UserBadgeRepository userBadgeRepository;
     private final BadgeRepository badgeRepository;
 
+
     public CustomUserDetailService(UserRepository userRepository,
                                    UserProjectRepository userProjectRepository,
                                    UserBadgeRepository userBadgeRepository,

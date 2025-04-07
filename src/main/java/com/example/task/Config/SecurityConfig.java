@@ -68,7 +68,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/users/*").hasAuthority("ADMIN")
                         .requestMatchers("/api/users/*/status").hasAuthority("ADMIN")
                                 .requestMatchers(HttpMethod.PUT, "/api/users/{userId}/restore").hasAuthority( "ADMIN")
-                                .requestMatchers(HttpMethod.GET, "/api/users/projects/{userId}").hasAuthority("ADMIN")
+                                .requestMatchers(HttpMethod.GET, "/api/users/projects/{userId}").authenticated()
 
                         // Students endpoint for mentors and admins
                         .requestMatchers("/api/users/active").hasAnyAuthority("MENTOR", "ADMIN")
@@ -89,10 +89,11 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/users/certificates/*/download").permitAll()
 
                         //userproject
+                                .requestMatchers(HttpMethod.POST, "/api/user-projects").hasAuthority("MENTOR")
                         .requestMatchers(HttpMethod.PUT, "/api/user-projects/users/{userId}/projects/*").hasAuthority("MENTOR")
-                        .requestMatchers(HttpMethod.POST, "/api/user-projects").hasAuthority("MENTOR")
-                        .requestMatchers(HttpMethod.GET, "/api/user-projects/users/*").hasAnyAuthority("ADMIN", "MENTOR")
-//                        .requestMatchers(HttpMethod.GET, "/api/user-projects/user").hasAuthority("STUDENT")
+
+                        .requestMatchers(HttpMethod.GET, "/api/user-projects/users/*").hasAnyAuthority("ADMIN", "MENTOR","STUDENT")
+                        .requestMatchers(HttpMethod.GET, "/api/user-projects/user/{userId}").hasAuthority("STUDENT")
 
                         //userbadges
 

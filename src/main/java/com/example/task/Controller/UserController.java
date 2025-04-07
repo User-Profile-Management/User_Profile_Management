@@ -345,7 +345,7 @@ public class UserController {
             );
         }
     }
-    @PreAuthorize("hasAuthority('ADMIN')")
+
     @GetMapping("/users/profile/{userId}")
     public ResponseEntity<ApiResponse<User>> getUserById(@PathVariable String userId) {
         try {
