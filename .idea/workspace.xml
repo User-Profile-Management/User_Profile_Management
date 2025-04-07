@@ -7,11 +7,10 @@
     <list default="true" id="d0aaab37-5217-4bd0-8a96-71030adad323" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/example/task/Config/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/task/Config/SecurityConfig.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/task/Controller/UserProjectController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/task/Controller/UserProjectController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/task/Controller/UserController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/task/Controller/UserController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/task/Service/UserService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/task/Service/UserService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/example/task/Config/SecurityConfig.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/task/Config/SecurityConfig.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/task/Controller/UserProjectController.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/task/Controller/UserProjectController.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/task/Service/CustomUserDetailService$1.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/task/Service/CustomUserDetailService.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/task/Service/CustomUserDetailService.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/example/task/Controller/UserController.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/task/Controller/UserController.class" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

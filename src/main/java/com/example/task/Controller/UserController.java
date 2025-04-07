@@ -3,7 +3,9 @@ package com.example.task.Controller;
 import com.example.task.DTO.ApiResponse;
 import com.example.task.DTO.ProfileDTO;
 import com.example.task.DTO.RegisterUserDTO;
+import com.example.task.Entity.Role;
 import com.example.task.Entity.User;
+import com.example.task.Repository.RoleRepository;
 import com.example.task.Repository.UserRepository;
 import com.example.task.Service.UserService;
 import com.example.task.Util.JwtUtil;
@@ -36,12 +38,14 @@ public class UserController {
     private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private  final RoleRepository roleRepository;
     @Autowired
-    public UserController(UserService userService, JwtUtil jwtUtil,UserRepository userRepository,PasswordEncoder passwordEncoder) {
+    public UserController(UserService userService, JwtUtil jwtUtil,UserRepository userRepository,PasswordEncoder passwordEncoder,RoleRepository roleRepository) {
         this.userService = userService;
         this.jwtUtil = jwtUtil;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.roleRepository = roleRepository;
     }
 
     @PostMapping("/users/register")
@@ -68,9 +72,7 @@ public class UserController {
             if (userDTO.getAddress() == null || userDTO.getAddress().trim().isEmpty()) {
                 return ResponseEntity.badRequest().body(new ApiResponse<>(400, "Address is required.", null, "Address is required."));
             }
-            if (userDTO.getRoleName() == null || userDTO.getRoleName().trim().isEmpty()) {
-                return ResponseEntity.badRequest().body(new ApiResponse<>(400, "Role is required.", null, "Role is required."));
-            }
+
             if (userDTO.getEmergencyContact() != null && !userDTO.getEmergencyContact().matches("\\d{10}")) {
                 return ResponseEntity.badRequest().body(new ApiResponse<>(400, "Emergency Contact Number must be exactly 10 digits.", null, "Invalid Emergency Contact format."));
             }
@@ -102,7 +104,7 @@ public class UserController {
                 user.setEmergencyContact(userDTO.getEmergencyContact());
             }
 
-            User registeredUser = userService.registerUser(user, userDTO.getRoleName());
+            User registeredUser = userService.registerUser(user);
 
             return ResponseEntity.ok(new ApiResponse<>(200, "User registered successfully. Awaiting admin approval.", registeredUser, null));
         } catch (Exception e) {
@@ -237,13 +239,11 @@ public class UserController {
             @PathVariable String userId,
             @RequestBody Map<String, String> request) {
         try {
-            
             User user = userService.getUserById(userId)
                     .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
 
             boolean isSoftDeleted = user.getDeletedAt() != null;
             boolean isPendingOrRejected = user.getStatus() == User.Status.PENDING || user.getStatus() == User.Status.REJECTED;
-
 
             if (isSoftDeleted) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
@@ -251,8 +251,7 @@ public class UserController {
                 );
             }
 
-
-            if (isPendingOrRejected && request.containsKey("status") && request.size() == 1) {
+            if (isPendingOrRejected && request.containsKey("status")) {
                 String status = request.get("status");
 
                 if (status == null || status.trim().isEmpty()) {
@@ -269,17 +268,25 @@ public class UserController {
                         );
                     }
                     user.setStatus(newStatus);
+
+                    // Update role if provided
+                    if (request.containsKey("role")) {
+                        String roleName = request.get("role");
+                        Role role = roleRepository.findByRoleNameIgnoreCase(roleName)
+                                .orElseThrow(() -> new RuntimeException("Role not found: " + roleName));
+                        user.setRole(role);
+                    }
+
                     user.setUpdatedAt(LocalDateTime.now());
                     userService.saveUser(user);
 
-                    return ResponseEntity.ok(new ApiResponse<>(200, "User status updated successfully.", null, null));
+                    return ResponseEntity.ok(new ApiResponse<>(200, "User status (and role) updated successfully.", null, null));
                 } catch (IllegalArgumentException e) {
                     return ResponseEntity.badRequest().body(
                             new ApiResponse<>(400, "Invalid status value.", null, "Invalid status provided.")
                     );
                 }
             }
-
 
             if (isPendingOrRejected) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
@@ -287,15 +294,8 @@ public class UserController {
                 );
             }
 
-
             if (request.containsKey("status")) {
                 String status = request.get("status");
-                if (status == null || status.trim().isEmpty()) {
-                    return ResponseEntity.badRequest().body(
-                            new ApiResponse<>(400, "Status is required.", null, "Status is empty or invalid.")
-                    );
-                }
-
                 try {
                     User.Status newStatus = User.Status.valueOf(status.toUpperCase());
                     if (newStatus == User.Status.PENDING || newStatus == User.Status.REJECTED) {
@@ -311,6 +311,12 @@ public class UserController {
                 }
             }
 
+            if (request.containsKey("role")) {
+                String roleName = request.get("role");
+                Role role = roleRepository.findByRoleNameIgnoreCase(roleName)
+                        .orElseThrow(() -> new RuntimeException("Role not found: " + roleName));
+                user.setRole(role);
+            }
 
             if (request.containsKey("fullName")) {
                 user.setFullName(request.get("fullName"));
@@ -345,6 +351,8 @@ public class UserController {
             );
         }
     }
+
+
 
     @GetMapping("/users/profile/{userId}")
     public ResponseEntity<ApiResponse<User>> getUserById(@PathVariable String userId) {

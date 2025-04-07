@@ -64,6 +64,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/users/count").hasAuthority("ADMIN")
                                 .requestMatchers("/api/users/pending").hasAuthority("ADMIN")
                         .requestMatchers("/api/users/*").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.PUT,"/api/users/{userId}").hasAuthority("ADMIN")
                         .requestMatchers("/api/users/*/status").hasAuthority("ADMIN")
                                 .requestMatchers(HttpMethod.PUT, "/api/users/{userId}/restore").hasAuthority( "ADMIN")
                                 .requestMatchers(HttpMethod.GET, "/api/users/projects/{userId}").authenticated()

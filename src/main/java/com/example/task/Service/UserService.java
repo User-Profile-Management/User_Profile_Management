@@ -64,8 +64,8 @@ public class UserService implements UserDetailsService {
 
 
     @Transactional
-    public User registerUser(User user, String roleName) {
-        Role role = roleService.assignRole(roleName);
+    public User registerUser(User user) {
+        Role role = roleService.assignRole("STUDENT"); // always assign STUDENT
         user.setRole(role);
         user.setProfilePicture(null);
         user.setStatus(User.Status.PENDING);
@@ -73,6 +73,7 @@ public class UserService implements UserDetailsService {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         return userRepository.save(user);
     }
+
     public User saveUser(User user) {
         return userRepository.save(user);
     }
@@ -81,8 +82,8 @@ public class UserService implements UserDetailsService {
         String prefix = "USR";
         if (role != null) {
             prefix = switch (role.getRoleName().toUpperCase()) {
-                case "STUDENT" -> "STU";
-                case "MENTOR" -> "EMP";
+                case "STUDENT" -> "USR";
+                case "MENTOR" -> "USR";
                 default -> prefix;
             };
         }
