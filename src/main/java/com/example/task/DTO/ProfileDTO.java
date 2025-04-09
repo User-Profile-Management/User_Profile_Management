@@ -1,6 +1,7 @@
 package com.example.task.DTO;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Base64;
 
 public class ProfileDTO {
@@ -15,9 +16,10 @@ public class ProfileDTO {
     private String status;
     private byte[] profilePicture;
     private String role;
+    private LocalDateTime deletedAt;
 
     public ProfileDTO(String userId, String fullName, String email, String contactNo, String emergencyContact, String address,
-                      LocalDate dateOfBirth, String status, byte[] profilePicture, String role) {
+                      LocalDate dateOfBirth, String status, byte[] profilePicture, String role, LocalDateTime deletedAt) {
         this.userId = userId;
         this.fullName = fullName;
         this.email = email;
@@ -28,6 +30,8 @@ public class ProfileDTO {
         this.status = status;
         this.profilePicture = profilePicture;
         this.role = role;
+        this.deletedAt = deletedAt;
+
     }
 
 
@@ -46,6 +50,14 @@ public class ProfileDTO {
     public String getStatus() { return status; }
     public byte[] getProfilePicture() { return profilePicture; }
     public String getRole() { return role; }
+
+    public LocalDateTime getDeletedAt() {
+        return deletedAt;
+    }
+
+    public void setDeletedAt(LocalDateTime deletedAt) {
+        this.deletedAt = deletedAt;
+    }
 
     // Setters
     public void setProfilePicture(byte[] profilePicture) {

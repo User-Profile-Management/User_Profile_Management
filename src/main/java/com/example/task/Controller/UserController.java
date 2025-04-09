@@ -155,7 +155,8 @@ public class UserController {
                     user.getDateOfBirth(),
                     user.getStatus().name(),
                     user.getProfilePicture(),
-                    user.getRole().getRoleName()
+                    user.getRole().getRoleName(),
+                    user.getDeletedAt()
             );
 
 
@@ -212,7 +213,8 @@ public class UserController {
                         user.getDateOfBirth(),
                         user.getStatus().name(),
                         user.getProfilePicture(),
-                        user.getRole().getRoleName()
+                        user.getRole().getRoleName(),
+                        user.getDeletedAt()
                 ))
                 .collect(Collectors.toList());
 

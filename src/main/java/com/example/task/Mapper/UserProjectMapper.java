@@ -21,7 +21,8 @@ public class UserProjectMapper {
                 userProject.getUser().getDateOfBirth(),
                 userProject.getUser().getStatus().name(),
                 null, // Default profile picture
-                userProject.getUser().getRole().getRoleName()
+                userProject.getUser().getRole().getRoleName(),
+                userProject.getUser().getDeletedAt()
         );
 
         // ✅ Convert profile picture to Base64 if it exists

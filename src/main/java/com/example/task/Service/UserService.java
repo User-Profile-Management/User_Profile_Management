@@ -93,7 +93,7 @@ public class UserService implements UserDetailsService {
 
         String userId = String.format("%s%03d", prefix, count);
 
-        
+
         while (userRepository.existsByUserId(userId)) {
             count++;
             userId = String.format("%s%03d", prefix, count);
