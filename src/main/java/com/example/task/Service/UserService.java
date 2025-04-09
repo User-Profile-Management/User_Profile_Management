@@ -88,9 +88,18 @@ public class UserService implements UserDetailsService {
             };
         }
 
-        Integer count = userRepository.countByRole(role) + 1;
 
-        return String.format("%s%03d", prefix, count);
+        Integer count = userRepository.countByRoleAndDeletedAtIsNull(role) + 1;
+
+        String userId = String.format("%s%03d", prefix, count);
+
+        
+        while (userRepository.existsByUserId(userId)) {
+            count++;
+            userId = String.format("%s%03d", prefix, count);
+        }
+
+        return userId;
     }
 
     @Transactional
