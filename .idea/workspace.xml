@@ -4,6 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
+    <list default="true" id="d0aaab37-5217-4bd0-8a96-71030adad323" name="Changes" comment="" />
     <list default="true" id="d0aaab37-5217-4bd0-8a96-71030adad323" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/example/task/Config/JwtRequestFilter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/task/Config/JwtRequestFilter.java" afterDir="false" />
@@ -49,20 +50,53 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Application.TaskApplication.executor": "Debug",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "feature-badge-table",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "/home/sreevidyavijayan/Desktop/User_Profile_Management",
-    "project.structure.last.edited": "Modules",
-    "project.structure.proportion": "0.15",
-    "project.structure.side.proportion": "0.2",
-    "settings.editor.selected.configurable": "editor.preferences.fonts.default"
-  }
-}]]></component>
+<!--  <component name="PropertiesComponent"><![CDATA[{-->
+<!--  &quot;keyToString&quot;: {-->
+<!--    &quot;Application.TaskApplication.executor&quot;: &quot;Run&quot;,-->
+<!--    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,-->
+<!--    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,-->
+<!--    &quot;git-widget-placeholder&quot;: &quot;feature-badge-table&quot;,-->
+<!--    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,-->
+<!--    &quot;last_opened_file_path&quot;: &quot;/home/meghnaraghu/Downloads/User_Profile_Management&quot;,-->
+<!--    &quot;project.structure.last.edited&quot;: &quot;Modules&quot;,-->
+<!--    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,-->
+<!--    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,-->
+<!--    &quot;settings.editor.selected.configurable&quot;: &quot;editor.preferences.fonts.default&quot;-->
+
+<!--    "Application.TaskApplication.executor": "Run",-->
+
+
+<!--    "Application.TaskApplication.executor": "Debug",-->
+<!--    "RunOnceActivity.ShowReadmeOnStart": "true",-->
+<!--    "RunOnceActivity.git.unshallow": "true",-->
+<!--    "git-widget-placeholder": "feature-badge-table",-->
+<!--    "kotlin-language-version-configured": "true",-->
+<!--    "last_opened_file_path": "/home/sreevidyavijayan/Desktop/User_Profile_Management",-->
+<!--    "project.structure.last.edited": "Modules",-->
+<!--    "project.structure.proportion": "0.15",-->
+<!--    "project.structure.side.proportion": "0.2",-->
+<!--    "settings.editor.selected.configurable": "editor.preferences.fonts.default"-->
+<!--  }-->
+<!--}]]></component>-->
+
+
+  <component name="PropertiesComponent">
+    <option name="keyToString">
+      <map>
+        <entry key="Application.TaskApplication.executor" value="Debug" />
+        <entry key="RunOnceActivity.ShowReadmeOnStart" value="true" />
+        <entry key="RunOnceActivity.git.unshallow" value="true" />
+        <entry key="git-widget-placeholder" value="feature-badge-table" />
+        <entry key="kotlin-language-version-configured" value="true" />
+        <entry key="last_opened_file_path" value="/home/sreevidyavijayan/Desktop/User_Profile_Management" />
+        <entry key="project.structure.last.edited" value="Modules" />
+        <entry key="project.structure.proportion" value="0.15" />
+        <entry key="project.structure.side.proportion" value="0.2" />
+        <entry key="settings.editor.selected.configurable" value="editor.preferences.fonts.default" />
+      </map>
+    </option>
+  </component>
+
   <component name="RunManager">
     <configuration name="TaskApplication" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="com.example.task.TaskApplication" />

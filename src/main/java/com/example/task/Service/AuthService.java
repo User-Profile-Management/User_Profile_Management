@@ -14,6 +14,9 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseToken;
+
 
 import java.util.Optional;
 
@@ -72,6 +75,19 @@ public class AuthService {
 
         return new JWTResponse(token);
     }
+
+    public JWTResponse generateJwtToken(User user) {
+        UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
+        String token = jwtUtil.generateToken(userDetails);
+        return new JWTResponse(token); // ✅ wrap it into JWTResponse
+    }
+
+    public String verifyGoogleTokenAndGetEmail(String idToken) throws Exception {
+        try {
+            FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(idToken);
+            return decodedToken.getEmail(); // safely get email from token
+        } catch (Exception e) {
+            throw new Exception("Invalid Google ID token: " + e.getMessage());
+        }
+    }
 }
-
-
