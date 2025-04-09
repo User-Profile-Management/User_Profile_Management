@@ -28,10 +28,8 @@ public class CertificateController {
     private final UserRepository userRepository;
 
 
-    @GetMapping("/get")
-    @PreAuthorize("hasAuthority('STUDENT')")
-    public ResponseEntity<ApiResponse<List<CertificateDTO>>> getCertificates() {
-        String userId = getAuthenticatedUserId();
+    @GetMapping("/get/{userId}")
+    public ResponseEntity<ApiResponse<List<CertificateDTO>>> getCertificates(@PathVariable String userId) {
         List<CertificateDTO> certificates = certificateService.getCertificatesByUserId(userId);
 
         if (certificates.isEmpty()) {
@@ -41,6 +39,7 @@ public class CertificateController {
 
         return ResponseEntity.ok(new ApiResponse<>(200, "Certificates retrieved successfully", certificates, null));
     }
+
 
 
 

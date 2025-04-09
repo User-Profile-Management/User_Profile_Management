@@ -41,6 +41,22 @@ public class UserProjectController {
         this.projectService = projectService;
         this.userRepository = userRepository;
     }
+    @GetMapping("/mentor/students")
+    @PreAuthorize("hasAuthority('MENTOR')")
+    public ResponseEntity<ApiResponse<List<User>>> getStudentsUnderMentor(@AuthenticationPrincipal UserDetails userDetails) {
+        String email = userDetails.getUsername();
+
+        // Get mentor's userId from the email
+        String mentorId = userRepository.findByEmail(email)
+                .map(User::getUserId)
+                .orElseThrow(() -> new UsernameNotFoundException("Mentor not found: " + email));
+
+        // Call service to get students
+        List<User> students = userProjectService.getStudentsUnderMentor(mentorId);
+        return ResponseEntity.ok(new ApiResponse<>(200, "Students fetched successfully", students, null));
+    }
+
+
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<UserProject>>> getAllUserProjects() {

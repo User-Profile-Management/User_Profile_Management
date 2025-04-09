@@ -31,6 +31,7 @@ public class CertificateService {
     }
 
 
+
     public byte[] getCertificatePdfById(Integer certificateId) {
         Certificate certificate = certificateRepository.findById(certificateId)
                 .orElseThrow(() -> new RuntimeException("Certificate not found"));

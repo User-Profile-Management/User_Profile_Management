@@ -38,4 +38,11 @@ public interface UserProjectRepository extends JpaRepository<UserProject, Intege
     int countByStatus(String status);
 
     Optional<Object> findByUserIdAndProjectId(String userId, Integer projectId);
+
+    @Query("SELECT up.user FROM UserProject up WHERE up.project.mentor.userId = :mentorId AND up.deletedAt IS NULL")
+    List<User> findStudentsByMentorId(@Param("mentorId") String mentorId);
+
+
+
+
 }

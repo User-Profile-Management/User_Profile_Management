@@ -50,6 +50,10 @@ public class UserProjectService {
         return project.map(userProjectRepository::findByProject)
                 .orElseThrow(() -> new RuntimeException("Project not found"));
     }
+    public List<User> getStudentsUnderMentor(String mentorId) {
+        return userProjectRepository.findStudentsByMentorId(mentorId);
+    }
+
 
     public UserProjectDTO addUserProject(UserProject userProject) {
 
